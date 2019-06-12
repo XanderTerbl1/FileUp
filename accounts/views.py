@@ -3,6 +3,7 @@ from django.contrib import auth
 
 # django user model
 from django.contrib.auth.models import User
+from myfiles.models import Folder
 
 
 def register(request):
@@ -31,6 +32,10 @@ def register(request):
 
         user = User.objects.create_user(username=username, password=password, email=email, first_name=first_name, last_name=last_name)
         user.save()
+
+        # Create the user's root-folder
+        root_folder = Folder(name = username, owner_id = user.id)
+        root_folder.save()
 
         #auto login
         auth.login(request, user)
