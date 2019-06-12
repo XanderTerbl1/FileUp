@@ -1,5 +1,19 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
 <h1>My Files</h1>
+
+<div class="container">
+    <ul>
+        {% for folder in folders %}
+        <li><a href="#">{{ folder.name }}</a></li>
+        {% endfor %}
+
+        {% for file in files %}
+        <li><a href="#">{{ file.name }}</a></li>
+        {% endfor %}
+    </ul>
+</div>
+
 {% endblock %}
