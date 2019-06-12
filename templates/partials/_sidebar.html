@@ -1,0 +1,11 @@
+{% load static %}
+
+<div class="border-right" id="sidebar-wrapper">
+    <div class="sidebar-heading"> <img src="{% static 'img/logo.png' %}"></div>
+    <div class="list-group list-group-flush">
+        <a href="{% url 'login' %}"
+            class="list-group-item {% if 'login' in request.path %} selected {% endif %}">Login</a>
+        <a href="{% url 'register' %}"
+            class="list-group-item {% if 'register' in request.path %} selected {% endif %}">Register</a>
+    </div>
+</div>

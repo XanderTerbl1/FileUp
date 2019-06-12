@@ -36,7 +36,7 @@ def register(request):
         auth.login(request, user)
         return redirect("myfiles")
     else:
-        return render(request, 'accounts/login.html')
+        return render(request, 'accounts/register.html')
 
 
 def login(request):

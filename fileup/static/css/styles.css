@@ -1,0 +1,177 @@
+/*
+Color Scheme 
+- #2a4d69 - DARKER
+- #4b86b4
+- #adcbe3
+- #e7eff6 - LIGHTER
+- #63ace5
+*/
+
+
+a {
+    color: #4b86b4;
+}
+
+/* LOGIN/REGISTER SCREEN */
+.login-container {
+    margin-top: 5%;
+    margin-bottom: 5%;
+}
+
+.login-logo {
+    position: relative;
+    margin-left: -41.5%;
+}
+
+.login-logo img {
+    position: absolute;
+    width: 20%;
+    margin-top: 19%;
+    background: #e7eff6;
+    border-radius: 4.5rem;
+    padding: 1%;
+}
+
+.login-form-1 {
+    padding: 9%;
+    background: #2a4d69;
+    box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.2), 0 9px 26px 0 rgba(0, 0, 0, 0.19);
+}
+
+.login-form-1 h3 {
+    text-align: center;
+    margin-bottom: 12%;
+    color: #fff;
+}
+
+.login-form-2 {
+    padding: 9%;
+    background: #63ace5;
+    box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.2), 0 9px 26px 0 rgba(0, 0, 0, 0.19);
+}
+
+.login-form-2 h3 {
+    text-align: center;
+    margin-bottom: 12%;
+    color: #fff;
+}
+
+.btnSubmit {
+    font-weight: 600;
+    width: 50%;
+    color: #282726;
+    background-color: #fff;
+    border: none;
+    border-radius: 1.5rem;
+    padding: 2%;
+}
+
+.btnForgetPwd {
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.btnForgetPwd:hover {
+    text-decoration: none;
+    color: #fff;
+}
+
+
+/* FILE SCREENS */
+#upload-btn {
+    color: white;
+    background-color: #4b86b4;
+    cursor: pointer;
+}
+
+#upload-btn:hover {
+    color: white;
+    background-color: #2a4d69;
+}
+
+
+.breadcrumb {
+    background: #f7f7f7;
+}
+
+/* The Popup Upload Modal */
+.modal {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* Stay in place */
+    z-index: 1;
+    /* Sit on top */
+    padding-top: 100px;
+    /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%;
+    /* Full width */
+    height: 100%;
+    /* Full height */
+    overflow: auto;
+    /* Enable scroll if needed */
+    background-color: rgb(0, 0, 0);
+    /* Fallback color */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Black w/ opacity */
+}
+
+.modal-body {
+    height: 400px;
+    width: 600px;
+
+    margin: auto;
+
+    border-radius: 20px;
+    background-color: white;
+}
+
+.upload-area {
+    height: 80%;
+    margin: 30px;
+
+    border-radius: 20px;
+    background-color: grey;
+}
+
+input[type="file"] {
+    display: none;
+}
+/*
+
+.page-heading {
+    color: #474747;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 20px 0px;
+}
+
+.page-breadcrumbs {
+    color: #999999;
+    font-size: 14px;
+}
+
+.card {
+    border-radius: 20px;
+    box-shadow: 0px 0px 3px #c1c1c1;
+    margin: 5px 0px;
+    color: #474747;
+    cursor: pointer;
+}
+
+.card:hover {
+    color: #4b86b4;
+}
+
+.card-body {
+    padding: 10px;
+}
+
+.card-heading {
+    margin: 15px 0px;
+    font-weight: bold;
+}
+*/
