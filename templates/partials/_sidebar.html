@@ -2,10 +2,34 @@
 
 <div class="border-right" id="sidebar-wrapper">
     <div class="sidebar-heading"> <img src="{% static 'img/logo.png' %}"></div>
+    {% if user.is_authenticated %}
+    <div class="container">
+        <p class="user-name">{{ user.first_name }} {{ user.last_name }}</p>
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0"
+                aria-valuemax="100"></div>
+        </div>
+        <p class="user-usage-info">25MB of 100MB used</p>
+    </div>
+    {% endif %}
     <div class="list-group list-group-flush">
+        {% if user.is_authenticated %}
+        <a href="#" class="list-group-item selected">My Files</a>
+        <a href="#" class="list-group-item">Shared Files</a>
+        <a href="#" class="list-group-item">Recycle Bin</a>
+        <a href="#" class="list-group-item">Dashboard</a>
+        <!-- Put logout inside the dashboard -->
+        <a href="javascript:{document.getElementById('logout').submit()}" class="list-group-item">Logout</a>
+        <form action="{% url 'logout' %}" method="POST" id="logout">
+            {% csrf_token %}
+            <input type="hidden">
+        </form>
+        <!-- End logout -->
+        {% else %}
         <a href="{% url 'login' %}"
             class="list-group-item {% if 'login' in request.path %} selected {% endif %}">Login</a>
         <a href="{% url 'register' %}"
             class="list-group-item {% if 'register' in request.path %} selected {% endif %}">Register</a>
+        {% endif %}
     </div>
 </div>
