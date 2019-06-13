@@ -7,9 +7,28 @@ Color Scheme
 - #63ace5
 */
 
+.file-controls button:hover {
+    background: #2a4d69 !important;
+}
 
 a {
     color: #4b86b4;
+}
+
+a:hover {
+    color: #2a4d69;   
+    text-decoration: none;
+}
+
+.btn {
+    color: white;
+    background-color: #4b86b4;
+    cursor: pointer;
+}
+
+.btn:hover {
+    color: white;
+    background-color: #2a4d69;
 }
 
 /* LOGIN/REGISTER SCREEN */
@@ -77,69 +96,14 @@ a {
     color: #fff;
 }
 
-
-/* FILE SCREENS */
-#upload-btn {
-    color: white;
-    background-color: #4b86b4;
-    cursor: pointer;
-}
-
-#upload-btn:hover {
-    color: white;
-    background-color: #2a4d69;
-}
-
-
 .breadcrumb {
     background: #f7f7f7;
-}
-
-/* The Popup Upload Modal */
-.modal {
-    display: none;
-    /* Hidden by default */
-    position: fixed;
-    /* Stay in place */
-    z-index: 1;
-    /* Sit on top */
-    padding-top: 100px;
-    /* Location of the box */
-    left: 0;
-    top: 0;
-    width: 100%;
-    /* Full width */
-    height: 100%;
-    /* Full height */
-    overflow: auto;
-    /* Enable scroll if needed */
-    background-color: rgb(0, 0, 0);
-    /* Fallback color */
-    background-color: rgba(0, 0, 0, 0.4);
-    /* Black w/ opacity */
-}
-
-.modal-body {
-    height: 400px;
-    width: 600px;
-
-    margin: auto;
-
-    border-radius: 20px;
-    background-color: white;
-}
-
-.upload-area {
-    height: 80%;
-    margin: 30px;
-
-    border-radius: 20px;
-    background-color: grey;
 }
 
 input[type="file"] {
     display: none;
 }
+
 /*
 
 .page-heading {
