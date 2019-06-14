@@ -1,20 +1,21 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.core import serializers
+import json
 
 from .models import Folder, File
-
 
 
 @login_required(login_url='/accounts/login')
 def myfiles(request):
     """
-    Serves current user his root folder and files.     
+    Serves current user his root folder and files.
     root folders are defined as follow
         - folder name = username
         - owned by user id
-        - parent_folder_id = null. 
-            Only root folders can have this property       
+        - parent_folder_id = null.
+            Only root folders can have this property
     """
 
     cur_user_id = request.user.id
@@ -55,11 +56,14 @@ def create_folder(request):
             )
             folder.save()
 
-            response_data = {
-                "message": 'HAHA! IT WORKED WANKER. RETURN DETAILS ABOUT IT HERE.'
-            }
+            # Serailize Folder
+            ser_folder = serializers.serialize('json', [folder, ])
 
-            return JsonResponse(response_data)
+            # Convert to 'dictionary'
+            struct = json.loads(ser_folder)
+
+            # [0] gets rid of the array wrapper
+            return JsonResponse(struct[0]['fields'])
         else:
             # TODO - Replace with json response
             # Not a POST request
@@ -68,3 +72,26 @@ def create_folder(request):
         # TODO - Replace with json response
         # Not Authenticated
         return redirect('myfiles')
+
+
+@login_required(login_url='/accounts/login')
+def upload_file(request):
+    if request.method == 'POST':
+        parent_id = request.POST['current_folder_id']
+        owner_id = request.user.id
+
+        if request.FILES.get("upload_file"):
+            # Save the file
+            file_name = request.FILES.get("upload_file").name
+            file_type = file_name.split(".")[-1]#  (^_^)
+            file = File(
+                name=file_name,
+                owner_id=owner_id,
+                parent_folder_id=parent_id,
+                file_type = file_type,
+                file_source=request.FILES['upload_file']
+            )
+            file.save()
+
+            # TODO - redirect to where they came from
+            return redirect('myfiles')

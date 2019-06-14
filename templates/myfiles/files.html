@@ -9,12 +9,14 @@
     <div class="row">
         <h2>My Files</h2>
         <div class="ml-4">
-            <form id="upload-form">
-                <!-- Check django documentation for what files should be uploaded-->
+            <!-- Form gets auto submitted when uploaded. Check myfiles.js -->
+            <form id="upload-form" action="{% url 'upload_file' %}" enctype="multipart/form-data" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="current_folder_id" value="{{ current.id }}">
                 <label for="file-upload" class="btn" id="upload-btn">
-                    <i class="fas fa-upload"></i> Upload Files
-                </label>
-                <input id="file-upload" type="file" />
+                    <i class="fas fa-upload"></i> Upload File
+                </label>                
+                <input id="file-upload" type="file" name="upload_file" />
             </form>
         </div>
     </div>
@@ -74,100 +76,46 @@
             <th scope="col">Name</th>
             <th scope="col">Type</th>
             <th scope="col">Owner</th>
-            <th scope="col">Date Created</th>
+            <th scope="col">Created</th>
             <th scope="col">Size</th>
             <th scope="col">
                 <!--Actions Column -->
             </th>
         </tr>
     </thead>
-    <tbody>
+    <tbody id="file-view-body">
+
+        {% for folder in folders %}
         <tr>
             <td>
                 <a href="index.html">
                     <i class="fas fa-folder"></i>
-                    Work Folder</a>
+                    {{ folder.name }}</a>
             </td>
             <td>folder</td>
-            <td>me</td>
-            <td>2019-08-5</td>
+            <td>{{ folder.owner_id }}</td>
+            <td>{{ folder.date_created |timesince }} ago</td>
             <td>-</td>
             <td> <i class="fas fa-ellipsis-v"></i></td>
         </tr>
-        <tr>
-            <td>
-                <a href="index.html">
-                    <i class="fas fa-folder"></i>
-                    Work Folder</a>
-            </td>
-            <td>folder</td>
-            <td>me</td>
-            <td>2019-08-5</td>
-            <td>-</td>
-            <td> <i class="fas fa-ellipsis-v"></i></td>
-        </tr>
-        <tr>
-            <td>
-                <a href="index.html">
-                    <i class="fas fa-folder"></i>
-                    Work Folder</a>
-            </td>
-            <td>folder</td>
-            <td>me</td>
-            <td>2019-08-5</td>
-            <td>-</td>
-            <td> <i class="fas fa-ellipsis-v"></i></td>
-        </tr>
-        <tr>
-            <td>
-                <a href="index.html">
-                    <i class="fas fa-folder"></i>
-                    Work Folder</a>
-            </td>
-            <td>folder</td>
-            <td>me</td>
-            <td>2019-08-5</td>
-            <td>-</td>
-            <td> <i class="fas fa-ellipsis-v"></i></td>
-        </tr>
-        <tr>
-            <td>
-                <a href="index.html">
-                    <i class="fas fa-folder"></i>
-                    Work Folder</a>
-            </td>
-            <td>folder</td>
-            <td>me</td>
-            <td>2019-08-5</td>
-            <td>-</td>
-            <td> <i class="fas fa-ellipsis-v"></i></td>
-        </tr>
-        <tr>
-            <td>
-                <a href="index.html">
-                    <i class="fas fa-folder"></i>
-                    Work Folder</a>
-            </td>
-            <td>folder</td>
-            <td>me</td>
-            <td>2019-08-5</td>
-            <td>-</td>
-            <td> <i class="fas fa-ellipsis-v"></i></td>
-        </tr>
+        {% endfor %}
 
         <!-- FILES -->
+        {% for file in files %}
         <tr>
             <td>
                 <a href="index.html">
                     <i class="fas fa-file"></i>
-                    Final Design</a>
+                    {{ file.name }}</a>
             </td>
-            <td>png</td>
-            <td>me</td>
-            <td>2019-12-5</td>
-            <td>-</td>
+            <td>{{ file.file_type }}</td>
+            <td>{{ file.owner_id }}</td>
+            <td>{{ file.date_created |timesince }} ago</td>
+            <td>{{ file.file_source.size }}</td>
             <td> <i class="fas fa-ellipsis-v"></i></td>
         </tr>
+        {% endfor %}
+
     </tbody>
 </table>
 

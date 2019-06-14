@@ -1,4 +1,12 @@
-$('#folder-create-form').on('submit', function(event){
+// =============== Auto Submit On Uploaded ========================//
+document.getElementById("file-upload").onchange = function () {
+    document.getElementById("upload-form").submit();
+    console.log("Something happened");
+};
+
+
+// =============== Folder Creation AJAX ========================//
+$('#folder-create-form').on('submit', function (event) {
     event.preventDefault();
     console.log("form submitted!")  // sanity check
     create_folder();
@@ -10,17 +18,26 @@ function create_folder() {
         url: "create_folder", // the endpoint
         type: "POST", // http method
         data: $("#folder-create-form").serialize(), // data sent with the post request
-        // handle a successful response
-        success: function (json) {
-            //Add the newly created file with the info you got from the request
-            
-            
-            //Reset the form
-            $("#folder-create-form")[0].reset()//[0] is workaround since reset() is not part of jquery
 
-            //            
-            console.log("Folder Created Successfully");
-            console.log(json);
+        // handle a successful response
+        success: function (folder) {
+            //Add the newly created file with the info you got from the request            
+            $("#file-view-body").prepend(`
+                <tr>
+                <td>
+                    <a href="index.html">
+                        <i class="fas fa-folder"></i>
+                        ` + folder.name + ` </a>
+                </td>
+                <td>folder</td>
+                <td>me</td>
+                <td>just now</td>
+                <td> - </td>
+                <td> <i class="fas fa-ellipsis-v"></i></td>
+            </tr>`
+            );
+
+            $("#folder-create-form")[0].reset()
         },
         // handle a non-successful response
         error: function (xhr, errmsg, err) {
