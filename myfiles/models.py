@@ -13,7 +13,10 @@ class Folder(models.Model):
     date_created = models.DateTimeField(default=datetime.now)
 
     is_recycled = models.BooleanField(default=False)
-    date_recycled = models.DateTimeField(default=datetime.now)
+
+    # auto updates on changes. Recycled will be last change.
+    # it's a workaround - better than making custom save function
+    date_recycled = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name

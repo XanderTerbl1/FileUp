@@ -103,16 +103,13 @@ def create_folder(request):
 @login_required(login_url='/accounts/login')
 def delete_folder(request):
     if request.method == 'POST':
-        folder_id = request.POST['folder_id']
+        folder_id = request.POST['id']
         owner_id = request.user.id
 
-        # TODO - Throw 401 instead of 404
-        requested_folder = get_object_or_404(
-            Folder, pk=folder_id, owner_id=owner_id)
-
-        # Move requested folder to recycle bin
-        requested_folder.update(
-            is_recycled=True, date_recycled=datetime.now)
+        # TODO - Throw 401 if failed/not found
+        requested_folder = Folder.objects.get(id=folder_id, owner_id=owner_id)
+        requested_folder.is_recycled = True
+        requested_folder.save()
 
         return JsonResponse({"id": folder_id})
 

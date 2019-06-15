@@ -90,7 +90,7 @@ function delete_folder(folder_id) {
     $.ajax({
         url: "/delete_folder", // the endpoint
         type: "POST", // http method
-        data: { "id": folder_id }, // data sent with the post request
+        data: { "id": folder_id, "csrfmiddlewaretoken": getCookie('csrftoken') }, // data sent with the post request
 
         success: function (folder) {
             console.log(folder)

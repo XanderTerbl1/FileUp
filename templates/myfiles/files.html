@@ -121,8 +121,8 @@
                     <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" href="#" onclick="renamePopup({{ folder.id }})">Rename Folder</a>
-                        <a class="dropdown-item" href="#">Delete Folder</a>
+                        <a class="dropdown-item" onclick="renamePopup({{ folder.id }})">Rename Folder</a>
+                        <a class="dropdown-item" onclick="delete_folder({{ folder.id }})">Delete Folder</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="#">Share...</a>
                         <a class="dropdown-item" href="#">Create Public Link</a>
@@ -152,8 +152,8 @@
                     <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" onclick="renamePopup({{ folder.id }})">Rename Folder</a>
-                        <a class="dropdown-item" onclick="delete_folder({{ folder.id }})">Delete Folder</a>
+                        <a class="dropdown-item">Rename Folder</a>
+                        <a class="dropdown-item">Delete Folder</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item">Share...</a>
                         <a class="dropdown-item">Create Public Link</a>
