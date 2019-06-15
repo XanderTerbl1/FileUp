@@ -10,7 +10,10 @@ class Folder(models.Model):
     # a parent folder id of null/blank would indicate a root folder.
     # A users root folder is created upon registration
     parent_folder_id = models.IntegerField(blank=True, null=True)
-    date_created = models.DateTimeField(default=datetime.now, blank=True)
+    date_created = models.DateTimeField(default=datetime.now)
+
+    is_recycled = models.BooleanField(default=False)
+    date_recycled = models.DateTimeField(default=datetime.now)
 
     def __str__(self):
         return self.name

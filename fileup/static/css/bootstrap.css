@@ -3035,6 +3035,10 @@ input[type="button"].btn-block {
   position: relative;
 }
 
+.dropleft{
+  cursor: pointer;
+}
+
 .dropdown-toggle {
   white-space: nowrap;
 }
