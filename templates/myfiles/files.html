@@ -106,7 +106,7 @@
     <tbody id="file-view-body">
 
         {% for folder in folders %}
-        <tr>
+        <tr id="folder-{{ folder.id }}-row">
             <td>
                 <a href="{% url 'folders' folder.id %}">
                     <i class="fas fa-folder"></i>
@@ -121,8 +121,8 @@
                     <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" onclick="renamePopup({{ folder.id }})">Rename Folder</a>
-                        <a class="dropdown-item" onclick="delete_folder({{ folder.id }})">Delete Folder</a>
+                        <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}')">Rename Folder</a>
+                        <a class="dropdown-item" onclick="remove('{{ folder.id }}', true)">Delete Folder</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="#">Share...</a>
                         <a class="dropdown-item" href="#">Create Public Link</a>

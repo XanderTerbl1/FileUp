@@ -85,19 +85,20 @@ function create_folder() {
 };
 
 // =============== Delete Folder  ========================//
-function delete_folder(folder_id) {
+function remove(id, is_folder) {
     console.log("delete folder is called!"); // sanity check
     $.ajax({
-        url: "/delete_folder", // the endpoint
+        url: "/remove/" + (is_folder ? "folder" : "file"), // the endpoint
         type: "POST", // http method
-        data: { "id": folder_id, "csrfmiddlewaretoken": getCookie('csrftoken') }, // data sent with the post request
+        data: { "id": id, "csrfmiddlewaretoken": getCookie('csrftoken') }, // data sent with the post request
 
-        success: function (folder) {
-            console.log(folder)
+        success: function (file) {
+            $('#' + (is_folder ? 'folder' : 'file') + '-' + file.id + '-row').remove();
+            console.log(file)
         },
 
         error: function (xhr, errmsg, err) {
-            console.log("folder creation failed...")
+            console.log("folder deletion failed...")
         }
     });
 };

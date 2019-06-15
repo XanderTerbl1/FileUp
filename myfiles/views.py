@@ -101,7 +101,7 @@ def create_folder(request):
 
 
 @login_required(login_url='/accounts/login')
-def delete_folder(request):
+def remove(request, file_type):
     if request.method == 'POST':
         folder_id = request.POST['id']
         owner_id = request.user.id

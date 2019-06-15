@@ -8,5 +8,5 @@ urlpatterns = [
     path('folders/<int:folder_id>', views.folders, name='folders'),
     # File Operations
     path('rename_folder', views.rename_folder, name="rename_folder"),
-    path('delete_folder', views.delete_folder, name="delete_folder")    
+    path('remove/<str:file_type>', views.remove, name="remove")
 ]

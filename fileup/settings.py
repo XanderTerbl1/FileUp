@@ -19,6 +19,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'myfiles.apps.MyfilesConfig',
+    'recyclebin.apps.RecyclebinConfig',
     'accounts.apps.AccountsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -112,6 +113,6 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'fileup/static')
 ]
 
-#MEDIA FOLDER SETTINGS
+# MEDIA FOLDER SETTINGS
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = "/media/"

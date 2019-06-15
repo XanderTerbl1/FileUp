@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<!-- Header & Upload -->
+<div class="container-fluid">
+    <div class="row">
+        <h2>Recycle Bin</h2>
+    </div>
+</div>
+
+<div class="container-fluid mt-2">
+    <p>Files in the recycle bin still accounts for storage used.</p>
+    <p>All files will be removed from the recycle bin after 60 days from deletion.</p>
+</div>
+
+<!-- File/Folder Controls-Buttonbar -->
+<div class="file-controls mb-3">
+    <div class="btn-group" role="group" aria-label="Basic example">
+        <button type="button" class="btn">Restore All</button>
+        <button type="button" class="btn">Delete All</button>
+    </div>
+</div>
+
+<table class="table table-hover file-view">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Type</th>
+            <th scope="col">Date Deleted</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody id="file-view-body">
+
+        {% for folder in folders %}
+        <tr id="folder-{{ folder.id }}-row">
+            <td><a href="">
+                    <i class="fas fa-folder"></i>
+                    <span id="folder-{{ folder.id }}-name">{{ folder.name }}</span>
+                </a>
+            </td>
+            <td>folder</td>
+            <td>{{ folder.date_recycled}}</td>
+            <td>
+                <div class="dropleft">
+                    <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" onclick="restore('{{ folder.id }}', true)">Restore Folder</a>
+                        <a class="dropdown-item" href="#">Permanently Remove</a>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+
+        <!-- Do Files Here -->
+    </tbody>
+</table>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/recyclebin.js' %}"></script>
+{% endblock %}
