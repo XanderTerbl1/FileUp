@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.contrib.auth.models import User
 from django.core import serializers
 from datetime import datetime
 import json
@@ -18,17 +19,15 @@ def myfiles(request):
         - parent_folder_id = null.
             Only root folders can have this property
     """
-
-    cur_user_id = request.user.id
     root_folder = Folder.objects.get(
         name=request.user.username,
-        owner_id=cur_user_id,
-        parent_folder_id__isnull=True)
+        owner=request.user,
+        parent_folder__isnull=True)
 
     folders = Folder.objects.filter(
-        parent_folder_id=root_folder.id, owner_id=cur_user_id, is_recycled=False).order_by('name')
+        parent_folder=root_folder, owner=request.user, is_recycled=False).order_by('name')
     files = File.objects.filter(
-        parent_folder_id=root_folder.id, owner_id=cur_user_id).order_by('name')
+        parent_folder_id=root_folder.id, owner_id=request.user.id).order_by('name')
 
     # The folder/files that need to be served - along with info
     # about the current folder(in this case the root)
@@ -53,15 +52,16 @@ def folders(request, folder_id):
 
     # TODO - Throw 401 instead of 404
     requested_folder = get_object_or_404(
-        Folder, pk=requested_folder_id, owner_id=cur_user_id)
+        Folder, pk=requested_folder_id, owner=cur_user_id)
 
     # get all the children of the current_folder
     folders = Folder.objects.filter(
-        parent_folder_id=requested_folder_id, owner_id=cur_user_id, is_recycled=False).order_by('name')
+        parent_folder=requested_folder_id, owner=cur_user_id, is_recycled=False).order_by('name')
 
     files = File.objects.filter(
         parent_folder_id=requested_folder_id, owner_id=cur_user_id).order_by('name')
 
+   
     # The folder/files that need to be served - along with info
     # about the current folder(in this case the root)
     context = {
@@ -78,14 +78,14 @@ def create_folder(request):
     if (request.user.is_authenticated):
         if request.method == 'POST':
             folder_name = request.POST['folder_name']
-            parent_id = request.POST['current_folder_id']
-            owner_id = request.user.id
+            parent_folder = Folder.objects.get(
+                id=request.POST['current_folder_id'])
 
             # create and save the new folder
             folder = Folder(
                 name=folder_name,
-                owner_id=owner_id,
-                parent_folder_id=parent_id
+                owner=request.user,
+                parent_folder=parent_folder
             )
             folder.save()
 
@@ -154,7 +154,5 @@ def rename_folder(request):
 
             # check if it is a file/folder
             # for now assuming folder
-
             folder = Folder.objects.filter(id=file_id).update(name=name)
-            print(folder)
             return JsonResponse({"id":  file_id, "name": name})

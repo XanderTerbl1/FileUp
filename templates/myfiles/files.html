@@ -43,6 +43,12 @@
     <div class="btn-group" role="group" aria-label="Basic example">
         <button type="button" class="btn" data-toggle="modal" data-target="#createFolderModel">+ Folder</button>
         <button type="button" class="btn">Download File</button>
+        {% if current.parent_folder %}
+        <a type="button" class="btn" {% if current.parent_folder.parent_folder %}
+            href="{% url 'folders' current.parent_folder.id %}" {% else %} href="{% url 'myfiles'%}" {% endif %}><i
+                class=" fas fa-level-up-alt"></i>
+        </a>
+        {% endif %}
     </div>
 </div>
 
@@ -113,7 +119,7 @@
                     <span id="folder-{{ folder.id }}-name">{{ folder.name }}</span></a>
             </td>
             <td>folder</td>
-            <td>{{ folder.owner_id }}</td>
+            <td>{{ folder.owner.first_name }}</td>
             <td>{{ folder.date_created |timesince }} ago</td>
             <td>-</td>
             <td>

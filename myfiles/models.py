@@ -5,11 +5,12 @@ from django.contrib.auth.models import User
 
 class Folder(models.Model):
     name = models.CharField(max_length=200)
-    owner_id = models.IntegerField()
+    owner = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 
-    # a parent folder id of null/blank would indicate a root folder.
+    # a parent folder of null/blank would indicate a root folder.
     # A users root folder is created upon registration
-    parent_folder_id = models.IntegerField(blank=True, null=True)
+    parent_folder = models.ForeignKey(
+        "self", on_delete=models.DO_NOTHING, blank=True, null=True)
     date_created = models.DateTimeField(default=datetime.now)
 
     is_recycled = models.BooleanField(default=False)
