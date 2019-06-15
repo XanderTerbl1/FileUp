@@ -30,10 +30,16 @@
                 <a href="{% url 'myfiles' %}">
                     <i class="fas fa-home"></i> All Files</a>
             </li>
+            {%  for crumb in breadcrumbs %}
+            {% if crumb.parent_folder %}
             <li class="breadcrumb-item">
-                <a href="#"> Some Folder</a>
+                <a href="{% url 'folders' crumb.id %}"> {{ crumb.name }} </a>
             </li>
+            {% endif %}
+            {%  endfor %}
+            {% if current.parent_folder %}
             <li class="breadcrumb-item active"> {{ current.name }}</li>
+            {% endif %}
         </ol>
     </nav>
 </section>

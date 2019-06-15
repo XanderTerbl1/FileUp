@@ -61,12 +61,19 @@ def folders(request, folder_id):
     files = File.objects.filter(
         parent_folder_id=requested_folder_id, owner_id=cur_user_id).order_by('name')
 
-   
+    # breadcrumb trail
+    bc_trail = []
+    parent = requested_folder.parent_folder
+    while (parent):
+        bc_trail.insert(0, parent)
+        parent = parent.parent_folder
+
     # The folder/files that need to be served - along with info
     # about the current folder(in this case the root)
     context = {
         'folders': folders,
         'files': files,
+        'breadcrumbs': bc_trail,
         'current': requested_folder
     }
 
