@@ -84,21 +84,22 @@
 <!-- Folder Rename Modal -->
 <!-- Form : folder-rename-form -->
 <!-- Submit method overwritten in myfiles.js -->
-<div class="modal fade" id="renameFolderModel" tabindex="-1" role="dialog" aria-labelledby="renameFolderModelTitle"
+<div class="modal fade" id="renameModal" tabindex="-1" role="dialog" aria-labelledby="renameModalTitle"
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <form class="modal-content" id="folder-rename-form" method="POST" action="{% url 'rename_folder' %}">
+        <form class="modal-content" id="rename-form" method="POST">
             {% csrf_token %}
             <div class="modal-header">
-                <h5 class="modal-title" id="renameFolderModelLongTitle">Rename Folder</h5>
+                <h5 class="modal-title" id="renameModalLongTitle">Rename Item</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body text-center">
-                <input type="hidden" name="id" id="rename-cur-folder-id">
-                <input type="text" placeholder="New Name" name="name">
-                <input type="submit" class="btn btn-primary" value="Rename Folder">
+                <input type="hidden" name="id" id="rename-cur-id">
+                <input type="hidden" name="type" id="rename-type">
+                <input type="text" placeholder="New Name" name="name" id="rename-name">
+                <input type="submit" class="btn btn-primary" value="Rename">
             </div>
         </form>
     </div>
@@ -133,7 +134,7 @@
                     <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}')">Rename Folder</a>
+                        <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}',true)">Rename Folder</a>
                         <a class="dropdown-item" onclick="remove('{{ folder.id }}', true)">Delete Folder</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="#">Share...</a>
@@ -147,14 +148,14 @@
 
         <!-- FILES -->
         {% for file in files %}
-        <tr>
+        <tr id="file-{{ file.id }}-row">
             <td>
                 <a href="index.html">
                     <i class="fas fa-file"></i>
-                    {{ file.name }}</a>
+                    <span id="file-{{ file.id }}-name">{{ file.name }}</span></a>
             </td>
             <td>{{ file.file_type }}</td>
-            <td>{{ file.owner_id }}</td>
+            <td>{{ file.owner }}</td>
             <td>{{ file.date_created |timesince }} ago</td>
             <td>{{ file.file_source.size }}</td>
             <td>
@@ -164,8 +165,8 @@
                     <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item">Rename Folder</a>
-                        <a class="dropdown-item">Delete Folder</a>
+                        <a class="dropdown-item" onclick="renamePopup('{{ file.id }}',false)">Rename File</a>
+                        <a class="dropdown-item" onclick="remove('{{ file.id }}', false)">Remove File</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item">Share...</a>
                         <a class="dropdown-item">Create Public Link</a>

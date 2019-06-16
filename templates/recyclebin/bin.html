@@ -39,7 +39,7 @@
         <tr id="folder-{{ folder.id }}-row">
             <td><a href="">
                     <i class="fas fa-folder"></i>
-                    <span id="folder-{{ folder.id }}-name">{{ folder.name }}</span>
+                    {{ folder.name }}
                 </a>
             </td>
             <td>folder</td>
@@ -50,7 +50,29 @@
                         aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                         <a class="dropdown-item" onclick="restore('{{ folder.id }}', true)">Restore Folder</a>
-                        <a class="dropdown-item" href="#">Permanently Remove</a>
+                        <a class="dropdown-item" onclick="perm_delete('{{ folder.id }}', true)">Permanently Remove</a>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+
+        {% for file in files %}
+        <tr id="file-{{ file.id }}-row">
+            <td><a href="">
+                    <i class="fas fa-file"></i>
+                    {{ file.name }}
+                </a>
+            </td>
+            <td>{{ file.file_type }}</td>
+            <td>{{ file.date_recycled}}</td>
+            <td>
+                <div class="dropleft">
+                    <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" onclick="restore('{{ file.id }}', false)">Restore File</a>
+                        <a class="dropdown-item" onclick="perm_delete('{{ file.id }}', false)">Permanently Remove</a>
                     </div>
                 </div>
             </td>

@@ -3,7 +3,9 @@ from . import views
 
 urlpatterns = [
     path('', views.recylebin, name='recyclebin'),
-    #restore/file
-    #restore/folder
+    # File Types
+    # /file
+    # /folder
     path('restore/<str:file_type>', views.restore, name='restore'),
+    path('perm_delete/<str:file_type>', views.perm_delete, name='perm_delete'),
 ]

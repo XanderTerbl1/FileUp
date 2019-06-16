@@ -27,7 +27,7 @@ def myfiles(request):
     folders = Folder.objects.filter(
         parent_folder=root_folder, owner=request.user, is_recycled=False).order_by('name')
     files = File.objects.filter(
-        parent_folder_id=root_folder.id, owner_id=request.user.id).order_by('name')
+        parent_folder=root_folder, owner=request.user, is_recycled=False).order_by('name')
 
     # The folder/files that need to be served - along with info
     # about the current folder(in this case the root)
@@ -59,7 +59,7 @@ def folders(request, folder_id):
         parent_folder=requested_folder_id, owner=cur_user_id, is_recycled=False).order_by('name')
 
     files = File.objects.filter(
-        parent_folder_id=requested_folder_id, owner_id=cur_user_id).order_by('name')
+        parent_folder=requested_folder_id, owner=cur_user_id, is_recycled=False).order_by('name')
 
     # breadcrumb trail
     bc_trail = []
@@ -108,58 +108,59 @@ def create_folder(request):
 
 
 @login_required(login_url='/accounts/login')
-def remove(request, file_type):
-    if request.method == 'POST':
-        folder_id = request.POST['id']
-        owner_id = request.user.id
-
-        # TODO - Throw 401 if failed/not found
-        requested_folder = Folder.objects.get(id=folder_id, owner_id=owner_id)
-        requested_folder.is_recycled = True
-        requested_folder.save()
-
-        return JsonResponse({"id": folder_id})
-
-
-@login_required(login_url='/accounts/login')
 def upload_file(request):
     if request.method == 'POST':
         if request.FILES.get("upload_file"):
             # Save the file
-            parent_id = request.POST['current_folder_id']
-            owner_id = request.user.id
-            # current_folder = Folder.objects.get(id = parent_id)
+            parent_folder = Folder.objects.get(
+                id=request.POST['current_folder_id'])
 
             file_name = request.FILES.get("upload_file").name
             file_type = file_name.split(".")[-1]  # (^_^)
 
             file = File(
                 name=file_name,
-                owner_id=owner_id,
-                parent_folder_id=parent_id,
+                owner=request.user,
+                parent_folder=parent_folder,
                 file_type=file_type,
                 file_source=request.FILES['upload_file']
             )
             file.save()
 
             # TODO - redirect to where they came from
-            return redirect('folders/' + parent_id)
+            return redirect('folders/' + str(parent_folder.id))
 
 
 @login_required(login_url='/accounts/login')
-def rename_folder(request):
-    if (request.user.is_authenticated):
-        if request.method == 'POST':
-            file_id = request.POST['id']
+def rename(request, file_type):
+    if request.method == 'POST':
+        file_id = request.POST['id']
+        owner_id = request.user.id
+        name = request.POST['name']
 
-            # TODO - Make sure that the user owns this file
-            # Or that he can added it
-            #confirmPermissions(id=file_id, perm=write ,type=file)
+        if (file_type == "folder"):
+            request_obj = Folder.objects.filter(
+                id=file_id, owner=owner_id).update(name=name)
+        elif (file_type == "file"):
+            request_obj = File.objects.filter(
+                id=file_id, owner=owner_id).update(name=name)
 
-            name = request.POST['name']
-            owner_id = request.user.id
-
-            # check if it is a file/folder
-            # for now assuming folder
-            folder = Folder.objects.filter(id=file_id).update(name=name)
+        if (request_obj is not None):
             return JsonResponse({"id":  file_id, "name": name})
+
+
+@login_required(login_url='/accounts/login')
+def remove(request, file_type):
+    if request.method == 'POST':
+        file_id = request.POST['id']
+        owner_id = request.user.id
+
+        if (file_type == "folder"):
+            request_obj = Folder.objects.get(id=file_id, owner=owner_id)
+        elif (file_type == "file"):
+            request_obj = File.objects.get(id=file_id, owner=owner_id)
+
+        if (request_obj is not None):
+            request_obj.is_recycled = True
+            request_obj.save()
+            return JsonResponse({"id": file_id})

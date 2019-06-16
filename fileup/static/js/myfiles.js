@@ -5,35 +5,40 @@ document.getElementById("file-upload").onchange = function () {
 };
 
 // =============== Rename Folder ========================//
-function renamePopup(folder_id) {
-    $("#rename-cur-folder-id").val(folder_id)
-    $('#renameFolderModel').modal()
+function renamePopup(id, is_folder) {
+    file_type = is_folder ? "folder" : "file";
+    cur_name = $("#" + file_type + "-" + id + "-name").html();
+    $("#rename-cur-id").val(id)
+    $("#rename-name").val(cur_name)
+    $("#rename-type").val(file_type)
+    $('#renameModal').modal()
 }
 
-$('#folder-rename-form').on('submit', function (event) {
+$('#rename-form').on('submit', function (event) {
     event.preventDefault();
-    rename_folder();
+    file_type = $("#rename-type").val()
+    rename(file_type);
 });
 
-function rename_folder() {
-    console.log("rename folder is working!"); // sanity check
+function rename(file_type) {
+    console.log("rename is working!"); // sanity check
     $.ajax({
-        url: $('#folder-rename-form').attr('action'), // the endpoint
+        url: "/rename/" + file_type, // the endpoint
         type: "POST", // http method
-        data: $("#folder-rename-form").serialize(), // data sent with the post request
+        data: $("#rename-form").serialize(), // data sent with the post request
 
         // handle a successful response
         success: function (file) {
             //Check if file or folder - assuming folder now.
-            $("#folder-" + file.id + "-name").html(file.name);
-            $("#folder-rename-form")[0].reset()
+            $("#" + file_type + "-" + file.id + "-name").html(file.name);
+            $("#rename-form")[0].reset()
         },
         // handle a non-successful response
         error: function (xhr, errmsg, err) {
             // $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
             //     " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
             // console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
-            console.log("folder rename failed...")
+            console.log("rename failed...")
         }
     });
 }
@@ -84,7 +89,7 @@ function create_folder() {
     });
 };
 
-// =============== Delete Folder  ========================//
+// =============== Remove Folder/File  ========================//
 function remove(id, is_folder) {
     console.log("delete folder is called!"); // sanity check
     $.ajax({

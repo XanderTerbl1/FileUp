@@ -7,6 +7,6 @@ urlpatterns = [
     path('upload_file', views.upload_file, name='upload_file'),
     path('folders/<int:folder_id>', views.folders, name='folders'),
     # File Operations
-    path('rename_folder', views.rename_folder, name="rename_folder"),
+    path('rename/<str:file_type>', views.rename, name="rename"),
     path('remove/<str:file_type>', views.remove, name="remove")
 ]

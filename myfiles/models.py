@@ -25,16 +25,22 @@ class Folder(models.Model):
 
 class File(models.Model):
     name = models.CharField(max_length=200)
-    parent_folder_id = models.IntegerField()
+    parent_folder = models.ForeignKey(Folder, on_delete=models.DO_NOTHING)
 
     file_source = models.FileField(upload_to='uploads/%Y/%m/%d/')
-    owner_id = models.IntegerField()
+    owner = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 
     # For now - filetype is just extracted from the uploaded file name
     file_type = models.CharField(max_length=20)
 
     # more like date added. We will leave it for consistency
     date_created = models.DateTimeField(default=datetime.now, blank=True)
+
+    is_recycled = models.BooleanField(default=False)
+
+    # auto updates on changes. Recycled will be last change.
+    # it's a workaround - better than making custom save function
+    date_recycled = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
