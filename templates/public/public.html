@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<!-- Header & Upload -->
+<div class="container-fluid">
+    <div class="row">
+        <h2>Public Viewer</h2>
+    </div>
+</div>
+
+<div class="container-fluid mt-2">
+    <p>Lorem Ipsum dolar sit amet</p>
+    <p>Dolar sit amet be removeddolar sit amet fromdolar sit amet dolar sit amet.</p>
+</div>
+
+<!-- File/Folder Controls-Buttonbar -->
+<div class="file-controls mb-3">
+    <div class="btn-group" role="group" aria-label="Basic example">
+        <button type="button" class="btn">What</button>
+        <button type="button" class="btn">What</button>
+    </div>
+</div>
+
+<table class="table table-hover file-view">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Type</th>
+            <th scope="col">Owner</th>
+            <th scope="col">Created</th>
+            <th scope="col">Size</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody id="file-view-body">
+
+        {% for folder in folders %}
+        <tr id="folder-{{ folder.id }}-row">
+            <td>
+                <a href="{% url 'folders' folder.id %}">
+                    <i class="fas fa-folder"></i>
+                    <span id="folder-{{ folder.id }}-name">{{ folder.name }}</span>
+                </a>
+            </td>
+            <td>folder {% if folder.is_public %}| <i class="fas fa-globe" title="Public Folder"></i>{% endif %}</td>
+            <td>{{ folder.owner.first_name }}</td>
+            <td>{{ folder.date_created |timesince }} ago</td>
+            <td>-</td>
+            <td>
+                <div class="dropleft">
+                    <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}',true)">Rename Folder</a>
+                        <a class="dropdown-item" onclick="remove('{{ folder.id }}', true)">Delete Folder</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">Share...</a>
+                        <a class="dropdown-item" onclick="publish('{{ folder.id }}', true)">Create Public Link</a>
+                        <a class="dropdown-item" href="#">Something</a>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+
+        <!-- FILES -->
+        {% for file in files %}
+        <tr id="file-{{ file.id }}-row">
+            <td>
+                <a href="index.html">
+                    <i class="fas fa-file"></i>
+                    <span id="file-{{ file.id }}-name">{{ file.name }}</span></a>
+            </td>
+            <td>{{ file.file_type }} {% if file.is_public %} | <i class="fas fa-globe"
+                    title="Public File"></i>{% endif %}</td>
+            <td>{{ file.owner }}</td>
+            <td>{{ file.date_created |timesince }} ago</td>
+            <td>{{ file.file_source.size }}</td>
+            <td>
+                <div class="dropleft">
+                    <!-- <i class="fas fa-ellipsis-v" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false"></i> -->
+                    <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" onclick="renamePopup('{{ file.id }}',false)">Rename File</a>
+                        <a class="dropdown-item" onclick="remove('{{ file.id }}', false)">Remove File</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item">Share...</a>
+                        <a class="dropdown-item">Create Public Link</a>
+                        <a class="dropdown-item">Something</a>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/recyclebin.js' %}"></script>
+{% endblock %}

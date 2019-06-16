@@ -123,9 +123,10 @@
             <td>
                 <a href="{% url 'folders' folder.id %}">
                     <i class="fas fa-folder"></i>
-                    <span id="folder-{{ folder.id }}-name">{{ folder.name }}</span></a>
+                    <span id="folder-{{ folder.id }}-name">{{ folder.name }}</span>
+                </a>
             </td>
-            <td>folder</td>
+            <td>folder {% if folder.is_public %}| <i class="fas fa-globe" title="Public Folder"></i>{% endif %}</td>
             <td>{{ folder.owner.first_name }}</td>
             <td>{{ folder.date_created |timesince }} ago</td>
             <td>-</td>
@@ -138,7 +139,7 @@
                         <a class="dropdown-item" onclick="remove('{{ folder.id }}', true)">Delete Folder</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="#">Share...</a>
-                        <a class="dropdown-item" href="#">Create Public Link</a>
+                        <a class="dropdown-item" onclick="publish('{{ folder.id }}', true)">Create Public Link</a>
                         <a class="dropdown-item" href="#">Something</a>
                     </div>
                 </div>
@@ -154,8 +155,9 @@
                     <i class="fas fa-file"></i>
                     <span id="file-{{ file.id }}-name">{{ file.name }}</span></a>
             </td>
-            <td>{{ file.file_type }}</td>
-            <td>{{ file.owner }}</td>
+            <td>{{ file.file_type }} {% if file.is_public %} | <i class="fas fa-globe"
+                    title="Public File"></i>{% endif %}</td>
+            <td>{{ file.owner.first_name }}</td>
             <td>{{ file.date_created |timesince }} ago</td>
             <td>{{ file.file_source.size }}</td>
             <td>
@@ -169,7 +171,7 @@
                         <a class="dropdown-item" onclick="remove('{{ file.id }}', false)">Remove File</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item">Share...</a>
-                        <a class="dropdown-item">Create Public Link</a>
+                        <a class="dropdown-item" onclick="publish('{{ file.id }}', false)">Create Public Link</a>
                         <a class="dropdown-item">Something</a>
                     </div>
                 </div>

@@ -8,5 +8,6 @@ urlpatterns = [
     path('folders/<int:folder_id>', views.folders, name='folders'),
     # File Operations
     path('rename/<str:file_type>', views.rename, name="rename"),
-    path('remove/<str:file_type>', views.remove, name="remove")
+    path('remove/<str:file_type>', views.remove, name="remove"),    
+    path('publish/<str:file_type>', views.publish, name="publish")  
 ]

@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.core import serializers
 from datetime import datetime
+from django.contrib import messages
 import json
 
 from .models import Folder, File
@@ -163,4 +164,33 @@ def remove(request, file_type):
         if (request_obj is not None):
             request_obj.is_recycled = True
             request_obj.save()
+
             return JsonResponse({"id": file_id})
+
+
+@login_required(login_url='/accounts/login')
+def publish(request, file_type):
+    """
+    Makes folder/file public by setting the is_public flag
+    and return a full link to access the file 
+    as part of the json response
+    """
+    if request.method == 'POST':
+        file_id = request.POST['id']
+        owner_id = request.user.id
+
+        if (file_type == "folder"):
+            request_obj = Folder.objects.get(id=file_id, owner=owner_id)
+        elif (file_type == "file"):
+            request_obj = File.objects.get(id=file_id, owner=owner_id)
+
+        if (request_obj is not None):
+            # host/public/type/id
+            url = request.META['HTTP_HOST'] + \
+                '/public/' + file_type + "/" + str(file_id)
+            request_obj.is_public = True
+            request_obj.save()
+            # TODO - Instead of sending an url
+            # redirecting to public app - and adding to 'messages'
+            # could also be an approach
+            return JsonResponse({"id": file_id, "access_link": url})

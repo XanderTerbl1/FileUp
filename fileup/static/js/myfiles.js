@@ -107,3 +107,22 @@ function remove(id, is_folder) {
         }
     });
 };
+
+// =============== Publish Folder/File  ========================//
+function publish(id, is_folder) {
+    console.log("delete folder is called!"); // sanity check
+    $.ajax({
+        url: "/publish/" + (is_folder ? "folder" : "file"), // the endpoint
+        type: "POST", // http method
+        data: { "id": id, "csrfmiddlewaretoken": getCookie('csrftoken') }, // data sent with the post request
+
+        success: function (response) {
+            // $('#' + (is_folder ? 'folder' : 'file') + '-' + file.id + '-row').remove();
+            alert("Public view at " + response.access_link)
+        },
+
+        error: function (xhr, errmsg, err) {
+            console.log("folder deletion failed...")
+        }
+    });
+};
