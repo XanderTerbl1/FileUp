@@ -1,4 +1,5 @@
 import os
+from django.contrib.messages import constants as messages
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -116,3 +117,8 @@ STATICFILES_DIRS = [
 # MEDIA FOLDER SETTINGS
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = "/media/"
+
+# Messaging/Alerts App
+MESSAGE_TAGS = {
+    messages.ERROR: 'danger',
+}

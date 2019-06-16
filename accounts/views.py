@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib import auth
+from django.contrib import auth, messages
 
 # django user model
 from django.contrib.auth.models import User
@@ -17,7 +17,7 @@ def register(request):
         password = request.POST['password']
         password2 = request.POST['password2']
 
-        #Validate Fields
+        # Validate Fields
         # if (password != password2):
         #     messages.error(request, "Passwords do not match")
         #     return redirect('register')
@@ -30,14 +30,15 @@ def register(request):
         #     messages.error(request, "Email is already taken")
         #     return redirect('register')
 
-        user = User.objects.create_user(username=username, password=password, email=email, first_name=first_name, last_name=last_name)
+        user = User.objects.create_user(
+            username=username, password=password, email=email, first_name=first_name, last_name=last_name)
         user.save()
 
         # Create the user's root-folder
-        root_folder = Folder(name = username, owner_id = user.id)
+        root_folder = Folder(name=username, owner_id=user.id)
         root_folder.save()
 
-        #auto login
+        # auto login
         auth.login(request, user)
         return redirect("myfiles")
     else:
@@ -52,10 +53,10 @@ def login(request):
 
         if (user is not None):
             auth.login(request, user)
-            # messages.success(request, 'You are now logged in ' + user.first_name)
+            messages.success(request, 'Welcome back, ' + user.first_name)
             return redirect('myfiles')
         else:
-            # messages.error(request, 'Invalid credentials')
+            messages.error(request, 'Invalid credentials')
             return redirect('login')
     else:
         return render(request, 'accounts/login.html')

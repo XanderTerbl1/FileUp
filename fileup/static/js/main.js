@@ -18,3 +18,8 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
+//Auto timeout for alerts - 5 seconds
+setTimeout(function () {
+    $('#message').fadeOut('slow');
+}, 5000);

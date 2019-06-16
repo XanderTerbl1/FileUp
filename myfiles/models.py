@@ -3,6 +3,12 @@ from datetime import datetime
 from django.contrib.auth.models import User
 
 
+"""
+Bit of redundant fields between Folder & File is better
+than dealing with the problems with multi-table-inheritance. x_X
+"""
+
+
 class Folder(models.Model):
     name = models.CharField(max_length=200)
     owner = models.ForeignKey(User, on_delete=models.DO_NOTHING)
@@ -18,6 +24,8 @@ class Folder(models.Model):
     # auto updates on changes. Recycled will be last change.
     # it's a workaround - better than making custom save function
     date_recycled = models.DateTimeField(auto_now=True)
+
+    is_public = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -41,6 +49,8 @@ class File(models.Model):
     # auto updates on changes. Recycled will be last change.
     # it's a workaround - better than making custom save function
     date_recycled = models.DateTimeField(auto_now=True)
+
+    is_public = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
