@@ -69,11 +69,16 @@ def folders(request, folder_id):
         bc_trail.insert(0, parent)
         parent = parent.parent_folder
 
+    root_folder = Folder.objects.get(
+        name=request.user.username,
+        owner=request.user,
+        parent_folder__isnull=True)
     # The folder/files that need to be served - along with info
     # about the current folder(in this case the root)
     context = {
         'folders': folders,
         'files': files,
+        'root': root_folder,
         'breadcrumbs': bc_trail,
         'current': requested_folder
     }
@@ -130,6 +135,33 @@ def upload_file(request):
 
             # TODO - redirect to where they came from
             return redirect('folders/' + str(parent_folder.id))
+
+
+@login_required(login_url='/accounts/login')
+def move(request, file_type):
+    '''
+    Currently - inorder to move a file/folder into a folder
+    you need to own the to and from files
+    Will be updated if needed when doing the sharing app
+    '''
+    if request.method == 'POST':
+        # File/Folder to be moved.
+        from_id = request.POST['from_id']
+        owner_id = request.user.id
+
+        # the folder to where it will be moved.
+        to_folder = Folder.objects.get(
+            id=request.POST['to_id'], owner=owner_id)
+
+        if (file_type == "folder"):
+            request_obj = Folder.objects.filter(
+                id=from_id, owner=owner_id).update(parent_folder=to_folder)
+        elif (file_type == "file"):
+            request_obj = File.objects.filter(
+                id=from_id, owner=owner_id).update(parent_folder=to_folder)
+
+        if (request_obj is not None):
+            return JsonResponse({"type": file_type, "from_id":  from_id, "to_id": request.POST["to_id"]})
 
 
 @login_required(login_url='/accounts/login')

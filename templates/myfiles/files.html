@@ -27,13 +27,14 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="{% url 'myfiles' %}">
+                <a href="{% url 'myfiles' %}" class="droppable" id="folder-{{ root.id }}">
                     <i class="fas fa-home"></i> All Files</a>
             </li>
             {%  for crumb in breadcrumbs %}
             {% if crumb.parent_folder %}
             <li class="breadcrumb-item">
-                <a href="{% url 'folders' crumb.id %}"> {{ crumb.name }} </a>
+                <a href="{% url 'folders' crumb.id %}" class="droppable" id="folder-{{ crumb.id }}"> {{ crumb.name }}
+                </a>
             </li>
             {% endif %}
             {%  endfor %}
@@ -121,7 +122,7 @@
         {% for folder in folders %}
         <tr id="folder-{{ folder.id }}-row">
             <td>
-                <a href="{% url 'folders' folder.id %}">
+                <a href="{% url 'folders' folder.id %}" class="droppable draggable" id="folder-{{ folder.id }}">
                     <i class="fas fa-folder"></i>
                     <span id="folder-{{ folder.id }}-name">{{ folder.name }}</span>
                 </a>
@@ -151,7 +152,7 @@
         {% for file in files %}
         <tr id="file-{{ file.id }}-row">
             <td>
-                <a href="index.html">
+                <a href="index.html" class="draggable" id="file-{{ file.id }}">
                     <i class="fas fa-file"></i>
                     <span id="file-{{ file.id }}-name">{{ file.name }}</span></a>
             </td>
@@ -186,4 +187,5 @@
 
 {% block extra_js %}
 <script src="{% static 'js/myfiles.js' %}"></script>
+<script src="{% static 'js/draggables.js' %}"></script>
 {% endblock %}

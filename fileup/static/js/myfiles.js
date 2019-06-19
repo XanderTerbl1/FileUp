@@ -89,6 +89,27 @@ function create_folder() {
     });
 };
 
+
+// =============== Move Folder/File  ========================//
+function move(from_id, to_id, is_folder) {
+    console.log("move folder is called!"); // sanity check
+    $.ajax({
+        url: "/move/" + (is_folder ? "folder" : "file"), // the endpoint
+        type: "POST", // http method
+        data: { "csrfmiddlewaretoken": getCookie('csrftoken'), "from_id": from_id, "to_id": to_id }, // data sent with the post request
+
+        success: function (response) {
+            $('#' + (is_folder ? 'folder' : 'file') + '-' + from_id + '-row').remove();
+            console.log(response)
+        },
+
+        error: function (xhr, errmsg, err) {
+            console.log("folder moving failed...")
+        }
+    });
+};
+
+
 // =============== Remove Folder/File  ========================//
 function remove(id, is_folder) {
     console.log("delete folder is called!"); // sanity check
