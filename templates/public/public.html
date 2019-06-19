@@ -40,7 +40,7 @@
         {% for folder in folders %}
         <tr id="folder-{{ folder.id }}-row">
             <td>
-                <a href="{% url 'folders' folder.id %}">
+                <a href="{% url 'public_content' folder.id %}">
                     <i class="fas fa-folder"></i>
                     <span id="folder-{{ folder.id }}-name">{{ folder.name }}</span>
                 </a>
@@ -54,12 +54,8 @@
                     <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}',true)">Rename Folder</a>
-                        <a class="dropdown-item" onclick="remove('{{ folder.id }}', true)">Delete Folder</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Share...</a>
-                        <a class="dropdown-item" onclick="publish('{{ folder.id }}', true)">Create Public Link</a>
-                        <a class="dropdown-item" href="#">Something</a>
+                        <a class="dropdown-item">Download Folder</a>
+                        <a class="dropdown-item">Copy Public Link</a>
                     </div>
                 </div>
             </td>
@@ -86,12 +82,8 @@
                     <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" onclick="renamePopup('{{ file.id }}',false)">Rename File</a>
-                        <a class="dropdown-item" onclick="remove('{{ file.id }}', false)">Remove File</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item">Share...</a>
-                        <a class="dropdown-item">Create Public Link</a>
-                        <a class="dropdown-item">Something</a>
+                        <a class="dropdown-item">Download File</a>
+                        <a class="dropdown-item">Copy Public Link</a>
                     </div>
                 </div>
             </td>
