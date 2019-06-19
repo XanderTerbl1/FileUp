@@ -152,7 +152,7 @@
         {% for file in files %}
         <tr id="file-{{ file.id }}-row">
             <td>
-                <a href="index.html" class="draggable" id="file-{{ file.id }}">
+                <a href="{% url 'download' file.id %}" class="draggable" id="file-{{ file.id }}">
                     <i class="fas fa-file"></i>
                     <span id="file-{{ file.id }}-name">{{ file.name }}</span></a>
             </td>

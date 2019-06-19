@@ -10,4 +10,7 @@ urlpatterns = [
     path('recyclebin/', include('recyclebin.urls')),
     path('public/', include('public.urls')),
     path('admin/', admin.site.urls),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+# This will allow files to be accessed if they have the url
+# we do not want that...
+# + static(settings.MEDIA_URL,  document_root=settings.MEDIA_ROOT)

@@ -8,7 +8,6 @@ Bit of redundant fields between Folder & File is better
 than dealing with the problems with multi-table-inheritance. x_X
 """
 
-
 class Folder(models.Model):
     name = models.CharField(max_length=200)
     owner = models.ForeignKey(User, on_delete=models.DO_NOTHING)

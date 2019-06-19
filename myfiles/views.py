@@ -1,11 +1,13 @@
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, Http404
 from django.contrib.auth.models import User
 from django.core import serializers
 from datetime import datetime
 from django.contrib import messages
 import json
+import os
 
 from .models import Folder, File
 
@@ -226,3 +228,28 @@ def publish(request, file_type):
             # redirecting to public app - and adding to 'messages'
             # could also be an approach
             return JsonResponse({"id": file_id, "access_link": url})
+
+
+def download(request, file_id):
+    '''
+    Currently we are serving the user the contents of the file
+    inside his browser.
+
+    This was easier/faster than making protected links. This way works
+    We are just relying on the mime type to always work...
+    '''
+
+    # check if the user has access to this file
+    file_obj = File.objects.get(id=file_id, owner=request.user.id)
+    file_path = file_obj.file_source.url[1:]
+    print(file_path)
+    if os.path.exists(file_path):
+        print("True")
+        with open(file_path, 'rb') as fh:
+            response = HttpResponse(
+                fh.read(), content_type="application/force-download")
+            response['Content-Disposition'] = 'inline; filename=' + \
+                os.path.basename(file_path)
+            return response
+    print("wtf")
+    raise Http404
