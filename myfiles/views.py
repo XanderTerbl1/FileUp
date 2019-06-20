@@ -52,6 +52,28 @@ def myfiles(request):
 
 
 @login_required(login_url='/accounts/login')
+def search(request):
+    query = request.GET["query"]
+    print(query)
+    if (query == ""): 
+        return redirect("myfiles")
+
+    cur_user_id = request.user.id
+    folders = Folder.objects.filter(
+        owner=cur_user_id, is_recycled=False, name__icontains=query).order_by('name')
+    files = File.objects.filter(
+        owner=cur_user_id, is_recycled=False, name__icontains=query).order_by('name')
+
+    context = {
+        'folders': folders,
+        'files': files,
+        'query': query,
+    }
+
+    return render(request, 'myfiles/search.html', context)
+
+
+@login_required(login_url='/accounts/login')
 def folders(request, folder_id):
     requested_folder_id = folder_id
     cur_user_id = request.user.id
@@ -215,7 +237,7 @@ def remove(request, file_type):
 def publish(request, file_type):
     """
     Makes folder/file public by setting the is_public flag
-    and return a full link to access the file 
+    and return a full link to access the file
     as part of the json response
     """
     if request.method == 'POST':

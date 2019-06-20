@@ -1,8 +1,15 @@
 // =============== Auto Submit On Uploaded ========================//
-document.getElementById("file-upload").onchange = function () {
-    document.getElementById("upload-form").submit();
-    console.log("Something happened");
-};
+if (document.getElementById("file_upload"))
+    document.getElementById("file-upload").onchange = function () {
+        document.getElementById("upload-form").submit();
+        console.log("Something happened");
+    };
+
+$("#search-submit").click(function () {
+    $("#search-form").submit();
+});
+
+
 
 // =============== Rename Folder ========================//
 function renamePopup(id, is_folder) {

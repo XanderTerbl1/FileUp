@@ -6,7 +6,8 @@
     <div class="container">
         <p class="user-name">{{ user.first_name }} {{ user.last_name }}</p>
         <div class="progress">
-            <div class="progress-bar" id="quota-sidebar-progressbar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+            <div class="progress-bar" id="quota-sidebar-progressbar" role="progressbar" aria-valuemin="0"
+                aria-valuemax="100"></div>
         </div>
         <p class="user-usage-info" id="quota-sidebar-info"></p>
     </div>
@@ -14,9 +15,10 @@
     <div class="list-group list-group-flush">
         {% if user.is_authenticated %}
         <a href="{% url 'myfiles' %}"
-            class="list-group-item {% if request.path == '/' or 'folders' in request.path %} selected {% endif %}">My
+            class="list-group-item {% if request.path == '/' or 'folders' in request.path or 'search' in request.path %} selected {% endif %}">My
             Files</a>
-        <a href="#" class="list-group-item">Shared Files</a>
+        <a href="#" class="list-group-item">Groups</a>
+        <a href="#" class="list-group-item">Shared With Me</a>
         <a href="{% url 'recyclebin' %}"
             class="list-group-item {% if 'recyclebin' in request.path %} selected {% endif %}">Recycle Bin</a>
         <a href="#" class="list-group-item">Dashboard</a>
