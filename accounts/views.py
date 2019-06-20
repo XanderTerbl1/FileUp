@@ -1,9 +1,34 @@
-from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import auth, messages
+from django.core import serializers
+from django.http import JsonResponse
+import json
 
 # django user model
 from django.contrib.auth.models import User
 from myfiles.models import Folder
+from .models import UserQuota
+
+
+@login_required(login_url='/accounts/login')
+def info(request):
+    """
+    Returns info about current user as JsonResponse
+    """
+    user_id = request.user.id
+
+    # Add different types of info
+    # i.e. number of folders
+    # i.e. number of files
+    # Dashboard stuff
+
+    quota = get_object_or_404(UserQuota,  user=user_id)
+    # Convert the model to a dictionary (to pass as Json)
+    ser_quota = serializers.serialize('json', [quota, ])
+    dict_quota = json.loads(ser_quota)
+
+    return JsonResponse({"quota": dict_quota[0]['fields']})
 
 
 def register(request):

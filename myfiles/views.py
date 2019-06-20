@@ -9,6 +9,10 @@ from django.contrib import messages
 import json
 import os
 
+# Temp
+from time import sleep
+
+
 from .models import Folder, File
 
 
@@ -22,6 +26,9 @@ def myfiles(request):
         - parent_folder_id = null.
             Only root folders can have this property
     """
+    # Used to simulate slow server
+    # sleep(2.5)
+
     root_folder = Folder.objects.get(
         name=request.user.username,
         owner=request.user,
@@ -52,6 +59,9 @@ def folders(request, folder_id):
     # check if the current user
     # owns the folder you are trying to show here.
     # if he doesn't we should throw unauthorized
+
+    # Used to simulate slow server
+    # sleep(2.5)
 
     # TODO - Throw 401 instead of 404
     requested_folder = get_object_or_404(
@@ -109,7 +119,6 @@ def create_folder(request):
 
             # Convert to 'dictionary'
             struct = json.loads(ser_folder)
-            print(struct)
 
             # [0] gets rid of the array wrapper
             return JsonResponse(struct[0])
@@ -240,7 +249,9 @@ def download(request, file_id):
     '''
 
     # check if the user has access to this file
-    file_obj = File.objects.get(id=file_id, owner=request.user.id)
+    # doesnt have to be the owner if the file is public
+    # or shared
+    file_obj = File.objects.get(id=file_id)
     file_path = file_obj.file_source.url[1:]
     print(file_path)
     if os.path.exists(file_path):

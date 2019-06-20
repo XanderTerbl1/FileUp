@@ -48,8 +48,8 @@
 <!-- File/Folder Controls-Buttonbar -->
 <div class="file-controls mb-3">
     <div class="btn-group" role="group" aria-label="Basic example">
-        <button type="button" class="btn" data-toggle="modal" data-target="#createFolderModel">+ Folder</button>
-        <button type="button" class="btn">Download File</button>
+        <button type="button" class="btn" data-toggle="modal" data-target="#createFolderModel">+ Create Folder</button>
+        <!-- <button type="button" class="btn">Download File</button> -->
         {% if current.parent_folder %}
         <a type="button" class="btn" {% if current.parent_folder.parent_folder %}
             href="{% url 'folders' current.parent_folder.id %}" {% else %} href="{% url 'myfiles'%}" {% endif %}><i
@@ -163,11 +163,11 @@
             <td>{{ file.file_source.size }}</td>
             <td>
                 <div class="dropleft">
-                    <!-- <i class="fas fa-ellipsis-v" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
-                                aria-expanded="false"></i> -->
                     <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a href="{% url 'download' file.id %}" class="dropdown-item">Download File</a>
+                        <div class="dropdown-divider"></div>
                         <a class="dropdown-item" onclick="renamePopup('{{ file.id }}',false)">Rename File</a>
                         <a class="dropdown-item" onclick="remove('{{ file.id }}', false)">Remove File</a>
                         <div class="dropdown-divider"></div>

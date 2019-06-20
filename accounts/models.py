@@ -1,3 +1,17 @@
 from django.db import models
+from django.contrib.auth.models import User
 
-# Create your models here.
+
+class UserQuota(models.Model):
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    # should this be dynamically calculated?
+    # No... on upload/create of files/folder
+    # determine who will be billed for it..
+    # On delete determine who should be compensated
+    current_usage_mb = models.DecimalField(
+        default=0, decimal_places=2, max_digits=7)
+    max_usage_mb = models.DecimalField(
+        default=1000, decimal_places=2, max_digits=7)
+
+    def __str__(self):
+        return self.user.username
