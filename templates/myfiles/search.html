@@ -16,7 +16,8 @@
 <div class="file-controls m-3 container-fluid">
     <div class="btn-group" role="group" aria-label="Basic example">
         <form action="{% url 'search' %}" id="search-form">
-            <input class="form-control" type="search" placeholder="Search" aria-label="Search" name="query" value="{{ query }}">
+            <input class="form-control" type="search" placeholder="Search" aria-label="Search" name="query"
+                value="{{ query }}">
         </form>
         <button type="button" class="btn" id="search-submit">Search</button>
     </div>
@@ -131,9 +132,4 @@
     </tbody>
 </table>
 
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'js/myfiles.js' %}"></script>
-<script src="{% static 'js/draggables.js' %}"></script>
 {% endblock %}

@@ -12,5 +12,6 @@ urlpatterns = [
     path('rename/<str:file_type>', views.rename, name="rename"),
     path('remove/<str:file_type>', views.remove, name="remove"),
     path('publish/<str:file_type>', views.publish, name="publish"),
+    path('share', views.share, name="share"),
     path('download/<int:file_id>', views.download, name="download")
 ]

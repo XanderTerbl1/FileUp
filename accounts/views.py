@@ -31,6 +31,28 @@ def info(request):
     return JsonResponse({"quota": dict_quota[0]['fields']})
 
 
+@login_required(login_url='/accounts/login')
+def users_all(request):
+    """
+    Returns name + surname and email of all users
+    """
+    user_id = request.user.id
+    users = User.objects.exclude(id=user_id).values(
+        "id", "first_name", "last_name", "email")
+
+    return JsonResponse({"users": list(users)})
+
+
+# TODO Implement...
+@login_required(login_url='/accounts/login')
+def groups_all(request):
+    """
+    Returns all group names and their ids
+    """
+
+    return JsonResponse({"msg": "noice"})
+
+
 def register(request):
     if request.method == 'POST':
         first_name = request.POST['first_name']

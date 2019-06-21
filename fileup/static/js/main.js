@@ -46,3 +46,42 @@ $.ajax({
         console.log("rename failed...")
     }
 });
+
+// ====================================
+/*
+Gets a list of all users. 
+Would be used when attempting to share folders/files
+
+This approach would never work/be practical in a bigger setting than CS Staff group.
+But since that is the scale of the assignment this would be a valid approach
+*/
+function getUserViewableList(callback) {
+    $.ajax({
+        url: "/accounts/users/all", // the endpoint
+        type: "GET", // http method
+
+        // handle a successful response
+        success: function (response) {
+            callback(response);
+        },
+        // handle a non-successful response
+        error: function (xhr, errmsg, err) {
+            console.log("Get users failed...")
+        }
+    });
+}
+function getGroupViewableList(callback) {
+    $.ajax({
+        url: "/accounts/groups/all", // the endpoint
+        type: "GET", // http method
+
+        // handle a successful response
+        success: function (response) {
+            callback(response);
+        },
+        // handle a non-successful response
+        error: function (xhr, errmsg, err) {
+            console.log("Get users failed...")
+        }
+    });
+}

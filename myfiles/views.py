@@ -14,6 +14,7 @@ from time import sleep
 
 
 from .models import Folder, File
+from shared.models import SharedFolder
 
 
 @login_required(login_url='/accounts/login')
@@ -55,7 +56,7 @@ def myfiles(request):
 def search(request):
     query = request.GET["query"]
     print(query)
-    if (query == ""): 
+    if (query == ""):
         return redirect("myfiles")
 
     cur_user_id = request.user.id
@@ -259,6 +260,30 @@ def publish(request, file_type):
             # redirecting to public app - and adding to 'messages'
             # could also be an approach
             return JsonResponse({"id": file_id, "access_link": url})
+
+
+@login_required(login_url='/accounts/login')
+def share(request):
+    """
+    """
+    if request.method == 'POST':
+        file_id = request.POST['id']
+        owner_id = request.user.id
+        request_obj = Folder.objects.get(id=file_id, owner=owner_id)
+
+        if (request_obj is not None):
+            request_obj.is_shared = True
+            request_obj.save()
+
+            shared, created = SharedFolder.objects.get_or_create(
+                folder=request_obj
+            )
+            shared.users.clear()
+            for id in request.POST["user_ids"]:
+                shared.users.add(id)
+
+            shared.save()
+            return JsonResponse({"id": "CREATED"})
 
 
 def download(request, file_id):

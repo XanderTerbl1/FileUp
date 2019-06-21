@@ -18,7 +18,8 @@
             class="list-group-item {% if request.path == '/' or 'folders' in request.path or 'search' in request.path %} selected {% endif %}">My
             Files</a>
 
-        <a href="#" class="list-group-item">Shared With Me</a>
+        <a href="{% url 'shared' %}"
+            class="list-group-item {% if 'shared' in request.path %} selected {% endif %}">Shared Files</a>
         <a href="{% url 'recyclebin' %}"
             class="list-group-item {% if 'recyclebin' in request.path %} selected {% endif %}">Recycle Bin</a>
         <a href="#" class="list-group-item">Dashboard</a>

@@ -1,5 +1,6 @@
+
 // =============== Auto Submit On Uploaded ========================//
-if (document.getElementById("file_upload"))
+if (document.getElementById("file-upload"))
     document.getElementById("file-upload").onchange = function () {
         document.getElementById("upload-form").submit();
         console.log("Something happened");
@@ -9,6 +10,35 @@ $("#search-submit").click(function () {
     $("#search-form").submit();
 });
 
+// =============== Draggable/Droppable Logic  ========================//
+
+$(".draggable").draggable({
+    revert: 'invalid',
+});
+
+//This class will be added to the 
+//droppable class once a valid option has been added
+// hoverClass: "drop-hover",
+
+$(".droppable").droppable({
+    accept: '.draggable',
+    drop: function (event, ui) {
+        var is_folder;
+        var from_id = ui.draggable[0].id;
+
+        if (from_id.includes("folder")) {
+            from_id = from_id.replace("folder-", "");
+            is_folder = true;
+        } else {
+            from_id = from_id.replace("file-", "");
+            is_folder = false;
+        }
+        var to_id = event.target.id;
+        to_id = to_id.replace("folder-", "");
+
+        move(from_id, to_id, is_folder);
+    }
+});
 
 
 // =============== Rename Folder ========================//
@@ -154,3 +184,62 @@ function publish(id, is_folder) {
         }
     });
 };
+
+
+// =============== Share File/Folder ========================//
+function sharePopup(id, is_folder) {
+    file_type = is_folder ? "folder" : "file";
+    $("#share-cur-id").val(id)
+    $("#share-type").val(file_type)
+
+    getUserViewableList(function (response) {
+        var users = response.users
+        var share_users = $("#share-user-list");
+        var user;
+        for (var i = 0; i < users.length; i++) {
+            user = users[i];
+            share_users.append(`            
+                <div class="checkbox">
+                    <label><input type="checkbox" name='user_ids' value="` + user.id + `">` + user.first_name + ' ' + user.last_name + '  (' + user.email + `)</label>
+                </div>
+            `);
+        }
+        getGroupViewableList(function (response) {
+            console.log(response);
+            $('#shareModal').modal()
+        });
+    });
+}
+
+$('#share-form').on('submit', function (event) {
+    event.preventDefault();
+    file_type = $("#share-type").val()
+
+    //Get People you should share with
+    //Get all groups you should share with
+
+    share(file_type);
+});
+
+function share(file_type) {
+    console.log("share is working!"); // sanity check
+    $.ajax({
+        url: "/share", // the endpoint
+        type: "POST", // http method
+        data: $("#share-form").serialize(), // data sent with the post request
+
+        // handle a successful response
+        success: function (response) {
+            console.log(response)
+            $("#share-user-list").html("");
+            $("#share-form")[0].reset()
+        },
+        // handle a non-successful response
+        error: function (xhr, errmsg, err) {
+            // $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
+            //     " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+            // console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            console.log("share failed...")
+        }
+    });
+}
