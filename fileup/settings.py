@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'myfiles.apps.MyfilesConfig',
     'recyclebin.apps.RecyclebinConfig',
     'accounts.apps.AccountsConfig',
+    'shared.apps.SharedConfig',
     'public.apps.PublicConfig',
     'django.contrib.admin',
     'django.contrib.auth',

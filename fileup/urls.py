@@ -9,6 +9,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('recyclebin/', include('recyclebin.urls')),
     path('public/', include('public.urls')),
+    # path('shared/', include('shared.urls')),
     path('admin/', admin.site.urls),
 ]
 # This will allow files to be accessed if they have the url
