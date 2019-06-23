@@ -8,6 +8,7 @@ from datetime import datetime
 from django.contrib import messages
 import json
 import os
+from django.http import Http404
 
 # Temp
 from time import sleep
@@ -15,6 +16,26 @@ from time import sleep
 
 from .models import Folder, File
 from shared.models import SharedFolder
+from shared.views import confirmSharedParent
+
+
+def confirmUserOwnedParent(requested_obj, user_id):
+    """
+    This function checks if the users owns any parent folders up the tree
+
+    When a file/folder is requested that is not the user's via this app
+    it could be that he owns the root folder.
+    Meaning he shared the original folder - and content was added within
+    """
+    if (requested_obj.owner.id == user_id):
+        return True
+
+    parent = requested_obj.parent_folder
+    while (parent):
+        if (parent.owner.id == user_id):
+            return True
+        parent = parent.parent_folder
+    return False
 
 
 @login_required(login_url='/accounts/login')
@@ -86,16 +107,21 @@ def folders(request, folder_id):
     # Used to simulate slow server
     # sleep(2.5)
 
-    # TODO - Throw 401 instead of 404
-    requested_folder = get_object_or_404(
-        Folder, pk=requested_folder_id, owner=cur_user_id)
+    requested_folder = Folder.objects.get(id=requested_folder_id)
+    # Is it the users folder?
+    if (requested_folder.owner.id != cur_user_id):
+        # Does he own the root/some parent folder?
+        if (not confirmUserOwnedParent(requested_folder, cur_user_id)):
+            # Then he does not have access to it
+            print("User does not have access")
+            raise Http404
 
     # get all the children of the current_folder
     folders = Folder.objects.filter(
-        parent_folder=requested_folder_id, owner=cur_user_id, is_recycled=False).order_by('name')
+        parent_folder=requested_folder_id, is_recycled=False).order_by('name')
 
     files = File.objects.filter(
-        parent_folder=requested_folder_id, owner=cur_user_id, is_recycled=False).order_by('name')
+        parent_folder=requested_folder_id, is_recycled=False).order_by('name')
 
     # breadcrumb trail
     bc_trail = []
@@ -123,28 +149,27 @@ def folders(request, folder_id):
 
 @login_required(login_url='/accounts/login')
 def create_folder(request):
-    if (request.user.is_authenticated):
-        if request.method == 'POST':
-            folder_name = request.POST['folder_name']
-            parent_folder = Folder.objects.get(
-                id=request.POST['current_folder_id'])
+    if request.method == 'POST':
+        folder_name = request.POST['folder_name']
+        parent_folder = Folder.objects.get(
+            id=request.POST['current_folder_id'])
 
-            # create and save the new folder
-            folder = Folder(
-                name=folder_name,
-                owner=request.user,
-                parent_folder=parent_folder
-            )
-            folder.save()
+        # create and save the new folder
+        folder = Folder(
+            name=folder_name,
+            owner=request.user,
+            parent_folder=parent_folder
+        )
+        folder.save()
 
-            # Serailize Folder
-            ser_folder = serializers.serialize('json', [folder, ])
+        # Serailize Folder
+        ser_folder = serializers.serialize('json', [folder, ])
 
-            # Convert to 'dictionary'
-            struct = json.loads(ser_folder)
+        # Convert to 'dictionary'
+        struct = json.loads(ser_folder)
 
-            # [0] gets rid of the array wrapper
-            return JsonResponse(struct[0])
+        # [0] gets rid of the array wrapper
+        return JsonResponse(struct[0])
 
 
 @login_required(login_url='/accounts/login')
@@ -167,8 +192,10 @@ def upload_file(request):
             )
             file.save()
 
-            # TODO - redirect to where they came from
-            return redirect('folders/' + str(parent_folder.id))
+            if (request.POST.get("shared_view")):
+                return redirect('shared/content/view/' + str(parent_folder.id))
+            else:
+                return redirect('folders/' + str(parent_folder.id))
 
 
 @login_required(login_url='/accounts/login')
@@ -218,6 +245,13 @@ def rename(request, file_type):
 
 @login_required(login_url='/accounts/login')
 def remove(request, file_type):
+    '''
+    Move the file/folder to the recycle bin 
+    where it will stay x ammount of time 
+    before being deleted
+
+    tags: DELETE/REMOVE/MOVE TO RECYCLE BIN
+    '''
     if request.method == 'POST':
         file_id = request.POST['id']
         owner_id = request.user.id
@@ -269,16 +303,28 @@ def share(request):
     if request.method == 'POST':
         file_id = request.POST['id']
         owner_id = request.user.id
-        request_obj = Folder.objects.get(id=file_id, owner=owner_id)
+        if (request.POST['type'] == "folder"):
+            request_obj = Folder.objects.get(id=file_id, owner=owner_id)
+        elif (request.POST['type'] == "file"):
+            request_obj = File.objects.get(id=file_id, owner=owner_id)
 
         if (request_obj is not None):
-            request_obj.is_shared = True
-            request_obj.save()
+            if (request.POST.get("user_ids")):
+                request_obj.is_shared = True
+            else:
+                request_obj.is_shared = False
 
+            # Sharing files works up to here.
+            # SharedFolder is only folder...
+            # Need to make SharedFile
+            request_obj.save()
             shared, created = SharedFolder.objects.get_or_create(
                 folder=request_obj
             )
-            shared.users.clear()
+
+            if (not created):
+                shared.users.clear()
+
             for id in request.POST["user_ids"]:
                 shared.users.add(id)
 

@@ -53,8 +53,11 @@ def perm_delete(request, file_type):
         owner_id = request.user.id
 
         if file_type == 'folder':
+            # We only need to check if the user owns the root
+            # of the folder trying to be deleted.
             root = Folder.objects.get(id=file_id, owner=owner_id)
-            total_deleted = delete_recursvie(root, owner_id)
+            total_deleted = delete_recursvie(root)
+
             return JsonResponse({"id": file_id, "total_deleted": total_deleted})
         elif file_type == "file":
             files = File.objects.filter(
@@ -62,17 +65,18 @@ def perm_delete(request, file_type):
             return JsonResponse({"id": file_id, "total_deleted": 1})
 
 
-def delete_recursvie(folder, owner_id):
+def delete_recursvie(folder):
     total_deleted = 0
-    folders = Folder.objects.filter(parent_folder=folder, owner=owner_id)
+
+    # Note - owner id is not a filter for descendant files/folders
+    # since the owner of a shared folder is able to remove the entire folder.
+    folders = Folder.objects.filter(parent_folder=folder)
 
     for f in folders:
-        total_deleted += delete_recursvie(f, owner_id)
+        total_deleted += delete_recursvie(f)
 
-    # Delete the files within in the folder as well
     # TODO - Delete the files from the server as well!
-    # TODO - Count the numbers of files we deleted as well!
-    files = File.objects.filter(parent_folder=folder, owner=owner_id).delete()
+    files = File.objects.filter(parent_folder=folder).delete()
     total_deleted += files[0]
 
     folder.delete()

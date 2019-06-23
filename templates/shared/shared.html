@@ -8,42 +8,14 @@
 <div class="container-fluid">
     <div class="row">
         <h2>Shared Files</h2>
-        <div class="ml-4">
-            <!-- Form gets auto submitted when uploaded. Check myfiles.js -->
-            <form id="upload-form" action="{% url 'upload_file' %}" enctype="multipart/form-data" method="POST">
-                {% csrf_token %}
-                <input type="hidden" name="current_folder_id" value="{{ current.id }}">
-                <label for="file-upload" class="btn" id="upload-btn">
-                    <i class="fas fa-upload"></i> Upload File
-                </label>
-                <input id="file-upload" type="file" name="upload_file" />
-            </form>
-        </div>
     </div>
 </div>
 
-<!-- Breadcrumb -->
-<section id="bc" class="mt-3">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="{% url 'myfiles' %}" class="droppable" id="folder-{{ root.id }}">
-                    <i class="fas fa-home"></i> All Files</a>
-            </li>
-            {%  for crumb in breadcrumbs %}
-            {% if crumb.parent_folder %}
-            <li class="breadcrumb-item">
-                <a href="{% url 'folders' crumb.id %}" class="droppable" id="folder-{{ crumb.id }}"> {{ crumb.name }}
-                </a>
-            </li>
-            {% endif %}
-            {%  endfor %}
-            {% if current.parent_folder %}
-            <li class="breadcrumb-item active"> {{ current.name }}</li>
-            {% endif %}
-        </ol>
-    </nav>
-</section>
+<div class="container-fluid mt-2">
+    <p>Files in the recycle bin still accounts for storage used.</p>
+    <p>All files will be removed from the recycle bin after 60 days from deletion.</p>
+</div>
+
 
 <!-- File/Folder Controls-Buttonbar -->
 <div class="file-controls mb-3">
@@ -52,61 +24,6 @@
             <input class="form-control ml-2" type="search" placeholder="Search" aria-label="Search" name="query">
         </form>
         <button type="button" class="btn mr-2" id="search-submit">Search</button>
-        <button type="button" class="btn" data-toggle="modal" data-target="#createFolderModel">+ Create Folder</button>
-        <!-- <button type="button" class="btn">Download File</button> -->
-        {% if current.parent_folder %}
-        <a type="button" class="btn" {% if current.parent_folder.parent_folder %}
-            href="{% url 'folders' current.parent_folder.id %}" {% else %} href="{% url 'myfiles'%}" {% endif %}><i
-                class=" fas fa-level-up-alt"></i>
-        </a>
-        {% endif %}
-    </div>
-</div>
-
-<!-- Folder Creation Modal -->
-<!-- Form : folder-create-form -->
-<!-- Submit method overwritten in myfiles.js -->
-<div class="modal fade" id="createFolderModel" tabindex="-1" role="dialog" aria-labelledby="createFolderModelTitle"
-    aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <form class="modal-content" id="folder-create-form" method="POST" action="{% url 'create_folder' %}">
-            {% csrf_token %}
-            <div class="modal-header">
-                <h5 class="modal-title" id="createFolderModelLongTitle">Create New Folder</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body text-center">
-                <input type="hidden" name="current_folder_id" value="{{ current.id }}">
-                <input type="text" placeholder="Folder Name" name="folder_name">
-                <input type="submit" class="btn btn-primary" value="Create Folder">
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Folder Rename Modal -->
-<!-- Form : folder-rename-form -->
-<!-- Submit method overwritten in myfiles.js -->
-<div class="modal fade" id="renameModal" tabindex="-1" role="dialog" aria-labelledby="renameModalTitle"
-    aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <form class="modal-content" id="rename-form" method="POST">
-            {% csrf_token %}
-            <div class="modal-header">
-                <h5 class="modal-title" id="renameModalLongTitle">Rename Item</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body text-center">
-                <input type="hidden" name="id" id="rename-cur-id">
-                <input type="hidden" name="type" id="rename-type">
-                <input type="text" placeholder="New Name" name="name" id="rename-name">
-                <input type="submit" class="btn btn-primary" value="Rename">
-            </div>
-        </form>
     </div>
 </div>
 
@@ -123,30 +40,28 @@
     </thead>
     <tbody id="file-view-body">
 
-        {% for shared_folder in shared_folders %}
+        {% for folder in folders %}
         <tr id="folder-{{ folder.id }}-row">
             <td>
-                <a href="{% url 'folders' shared_folder.folder.id %}" class="droppable draggable"
-                    id="folder-{{ shared_folder.folder.id }}">
+                <a href="{% url 'shared_content' folder.id %}" class="droppable draggable" id="folder-{{ folder.id }}">
                     <i class="fas fa-folder"></i>
-                    <span id="folder-{{ shared_folder.folder.id }}-name">{{ shared_folder.folder.name }}</span>
+                    <span id="folder-{{ folder.id }}-name">{{ folder.name }}</span>
                 </a>
             </td>
-            <td>folder {% if shared_folder.folder.is_public %}| <i class="fas fa-globe"
-                    title="Public Folder"></i>{% endif %}</td>
-            <td>{{ shared_folder.folder.owner.first_name }}</td>
-            <td>{{ shared_folder.folder.date_created |timesince }} ago</td>
+            <td>folder {% if folder.is_public %}| <i class="fas fa-globe" title="Public Folder"></i>{% endif %}</td>
+            <td>{{ folder.owner.first_name }}</td>
+            <td>{{ folder.date_created |timesince }} ago</td>
             <td>-</td>
             <td>
                 <div class="dropleft">
                     <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" onclick="renamePopup('{{ shared_folder.folder.id }}',true)">Rename
+                        <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}',true)">Rename
                             Folder</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="#">Share...</a>
-                        <a class="dropdown-item" onclick="publish('{{ shared_folder.folder.id }}', true)">Create Public
+                        <a class="dropdown-item" onclick="publish('{{ folder.id }}', true)">Create Public
                             Link</a>
                         <a class="dropdown-item" href="#">Something</a>
                     </div>

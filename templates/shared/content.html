@@ -7,11 +7,12 @@
 <!-- Header & Upload -->
 <div class="container-fluid">
     <div class="row">
-        <h2>My Files</h2>
+        <h2>Shared Files</h2>
         <div class="ml-4">
             <!-- Form gets auto submitted when uploaded. Check myfiles.js -->
             <form id="upload-form" action="{% url 'upload_file' %}" enctype="multipart/form-data" method="POST">
                 {% csrf_token %}
+                <input type="hidden" name="shared_view" value="True">
                 <input type="hidden" name="current_folder_id" value="{{ current.id }}">
                 <label for="file-upload" class="btn" id="upload-btn">
                     <i class="fas fa-upload"></i> Upload File
@@ -27,13 +28,14 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="{% url 'myfiles' %}" class="droppable" id="folder-{{ root.id }}">
-                    <i class="fas fa-home"></i> All Files</a>
+                <a href="{% url 'shared' %}" class="droppable" id="folder-{{ root.id }}">
+                    <i class="fas fa-home"></i> All Shared Files</a>
             </li>
             {%  for crumb in breadcrumbs %}
-            {% if crumb.parent_folder %}
+            {% if crumb %}
             <li class="breadcrumb-item">
-                <a href="{% url 'folders' crumb.id %}" class="droppable" id="folder-{{ crumb.id }}"> {{ crumb.name }}
+                <a href="{% url 'shared_content' crumb.id %}" class="droppable" id="folder-{{ crumb.id }}">
+                    {{ crumb.name }}
                 </a>
             </li>
             {% endif %}
@@ -86,7 +88,6 @@
     </div>
 </div>
 
-
 <!-- Folder Rename Modal -->
 <!-- Form : folder-rename-form -->
 <!-- Submit method overwritten in myfiles.js -->
@@ -111,50 +112,6 @@
     </div>
 </div>
 
-
-<!-- Folder Share Modal -->
-<!-- Form : share-form -->
-<!-- Submit method overwritten in myfiles.js -->
-<div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="shareModalTitle"
-    aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <form class="modal-content" id="share-form" method="POST">
-            {% csrf_token %}
-            <div class="modal-header">
-                <h5 class="modal-title" id="shareModalLongTitle">Share Folder</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body text-left">
-                <input type="hidden" name="id" id="share-cur-id">
-                <input type="hidden" name="type" id="share-type">
-
-                <p><b>Users</b></p>
-                <div id="share-user-list">
-                    <!-- User Checkbox Example -->
-                    <!-- 
-                        <div class="checkbox">
-                            <label><input type="checkbox" name="users[]" value="    id">Name Surname (Email)</label>
-                        </div>
-                     -->
-                </div>
-
-                <p><b>Groups</b></p>
-                <div id="share-group-list">
-                    <div class="checkbox">
-                        <label><input type="checkbox" value="">COS216</label>
-                    </div>
-                </div>
-
-
-                <input type="submit" class="btn btn-primary" value="Share">
-            </div>
-        </form>
-    </div>
-</div>
-
-
 <table class="table table-hover file-view">
     <thead>
         <tr>
@@ -171,15 +128,12 @@
         {% for folder in folders %}
         <tr id="folder-{{ folder.id }}-row">
             <td>
-                <a href="{% url 'folders' folder.id %}" class="droppable draggable" id="folder-{{ folder.id }}">
+                <a href="{% url 'shared_content' folder.id %}" class="droppable draggable" id="folder-{{ folder.id }}">
                     <i class="fas fa-folder"></i>
                     <span id="folder-{{ folder.id }}-name">{{ folder.name }}</span>
                 </a>
             </td>
-            <td>folder
-                {% if folder.is_public %}| <i class="fas fa-globe" title="Public Folder"></i>{% endif %}
-                {% if folder.is_shared %}| <i class="fas fa-users" title="Shared Folder"></i></i>{% endif %}
-            </td>
+            <td>folder {% if folder.is_public %}| <i class="fas fa-globe" title="Public Folder"></i>{% endif %}</td>
             <td>{{ folder.owner.first_name }}</td>
             <td>{{ folder.date_created |timesince }} ago</td>
             <td>-</td>
@@ -188,11 +142,12 @@
                     <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}',true)">Rename Folder</a>
-                        <a class="dropdown-item" onclick="remove('{{ folder.id }}', true)">Delete Folder</a>
+                        <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}',true)">Rename
+                            Folder</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" onclick="sharePopup('{{ folder.id }}',true)">Share Folder</a>
-                        <a class="dropdown-item" onclick="publish('{{ folder.id }}', true)">Create Public Link</a>
+                        <a class="dropdown-item" href="#">Share...</a>
+                        <a class="dropdown-item" onclick="publish('{{ folder.id }}', true)">Create Public
+                            Link</a>
                         <a class="dropdown-item" href="#">Something</a>
                     </div>
                 </div>
@@ -223,7 +178,7 @@
                         <a class="dropdown-item" onclick="renamePopup('{{ file.id }}',false)">Rename File</a>
                         <a class="dropdown-item" onclick="remove('{{ file.id }}', false)">Remove File</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" onclick="sharePopup('{{ folder.id }}',false)">Share File</a>
+                        <a class="dropdown-item">Share...</a>
                         <a class="dropdown-item" onclick="publish('{{ file.id }}', false)">Create Public Link</a>
                         <a class="dropdown-item">Something</a>
                     </div>
@@ -235,4 +190,7 @@
     </tbody>
 </table>
 
+{% endblock %}
+
+{% block extra_js %}
 {% endblock %}

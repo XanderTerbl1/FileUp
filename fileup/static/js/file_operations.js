@@ -1,10 +1,9 @@
-
 // =============== Auto Submit On Uploaded ========================//
 if (document.getElementById("file-upload"))
     document.getElementById("file-upload").onchange = function () {
         document.getElementById("upload-form").submit();
-        console.log("Something happened");
     };
+
 
 $("#search-submit").click(function () {
     $("#search-form").submit();
@@ -206,6 +205,7 @@ function sharePopup(id, is_folder) {
         }
         getGroupViewableList(function (response) {
             console.log(response);
+            //Show the Popup after group and User items where fetched.
             $('#shareModal').modal()
         });
     });
@@ -213,15 +213,10 @@ function sharePopup(id, is_folder) {
 
 $('#share-form').on('submit', function (event) {
     event.preventDefault();
-    file_type = $("#share-type").val()
-
-    //Get People you should share with
-    //Get all groups you should share with
-
-    share(file_type);
+    share();
 });
 
-function share(file_type) {
+function share() {
     console.log("share is working!"); // sanity check
     $.ajax({
         url: "/share", // the endpoint

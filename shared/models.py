@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 class SharedFolder(models.Model):
     folder = models.OneToOneField(
-        Folder, on_delete=models.DO_NOTHING)
+        Folder, on_delete=models.CASCADE)
     users = models.ManyToManyField(User)
 
     def __str__(self):
