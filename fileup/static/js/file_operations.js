@@ -40,6 +40,28 @@ $(".droppable").droppable({
 });
 
 
+
+// =============== Move Folder/File  ========================//
+function move(from_id, to_id, is_folder) {
+    console.log("move folder is called!"); // sanity check
+    $.ajax({
+        url: "/move/" + (is_folder ? "folder" : "file"), // the endpoint
+        type: "POST", // http method
+        data: { "csrfmiddlewaretoken": getCookie('csrftoken'), "from_id": from_id, "to_id": to_id }, // data sent with the post request
+
+        success: function (response) {
+            $('#' + (is_folder ? 'folder' : 'file') + '-' + from_id + '-row').remove();
+            var msg = "Moved '" + response['from_name'] + "' to '" + response["to_name"] + "'";
+            displayAlert(msg, "success");
+        },
+
+        error: function (xhr, errmsg, err) {
+            displayAlert(err + ": " + err, "danger", 10 * 1000)
+        }
+    });
+};
+
+
 // =============== Rename Folder ========================//
 function renamePopup(id, is_folder) {
     file_type = is_folder ? "folder" : "file";
@@ -47,7 +69,7 @@ function renamePopup(id, is_folder) {
     $("#rename-cur-id").val(id)
     $("#rename-name").val(cur_name)
     $("#rename-type").val(file_type)
-    $('#renameModal').modal()
+    $('#renameModal').modal('show')
 }
 
 $('#rename-form').on('submit', function (event) {
@@ -68,13 +90,11 @@ function rename(file_type) {
             //Check if file or folder - assuming folder now.
             $("#" + file_type + "-" + file.id + "-name").html(file.name);
             $("#rename-form")[0].reset()
+            $('#renameModal').modal('hide')
         },
         // handle a non-successful response
         error: function (xhr, errmsg, err) {
-            // $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
-            //     " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
-            // console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
-            console.log("rename failed...")
+            displayAlert(err + ": " + err, "danger", 10 * 1000)
         }
     });
 }
@@ -114,33 +134,11 @@ function create_folder() {
             );
 
             $("#folder-create-form")[0].reset()
+            $('#createFolderModel').modal('hide')
         },
         // handle a non-successful response
         error: function (xhr, errmsg, err) {
-            // $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
-            //     " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
-            // console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
-            console.log("folder creation failed...")
-        }
-    });
-};
-
-
-// =============== Move Folder/File  ========================//
-function move(from_id, to_id, is_folder) {
-    console.log("move folder is called!"); // sanity check
-    $.ajax({
-        url: "/move/" + (is_folder ? "folder" : "file"), // the endpoint
-        type: "POST", // http method
-        data: { "csrfmiddlewaretoken": getCookie('csrftoken'), "from_id": from_id, "to_id": to_id }, // data sent with the post request
-
-        success: function (response) {
-            $('#' + (is_folder ? 'folder' : 'file') + '-' + from_id + '-row').remove();
-            console.log(response)
-        },
-
-        error: function (xhr, errmsg, err) {
-            console.log("folder moving failed...")
+            displayAlert(err + ": " + err, "danger", 10 * 1000)
         }
     });
 };
@@ -160,26 +158,26 @@ function remove(id, is_folder) {
         },
 
         error: function (xhr, errmsg, err) {
-            console.log("folder deletion failed...")
+            displayAlert(err + ": " + err, "danger", 10 * 1000)
         }
     });
 };
 
 // =============== Publish Folder/File  ========================//
 function publish(id, is_folder) {
-    console.log("delete folder is called!"); // sanity check
     $.ajax({
         url: "/publish/" + (is_folder ? "folder" : "file"), // the endpoint
         type: "POST", // http method
         data: { "id": id, "csrfmiddlewaretoken": getCookie('csrftoken') }, // data sent with the post request
 
         success: function (response) {
-            // $('#' + (is_folder ? 'folder' : 'file') + '-' + file.id + '-row').remove();
-            alert("Public view at " + response.access_link)
+            // $('#' +  + '-' + file.id + '-row').remove();            
+            var msg = (is_folder ? 'Folder' : 'File') + " public view link: <a href='" + response.rel_path + "'>" + response.access_link + "</a>";
+            displayAlert(msg, "success", 20 * 1000);
         },
 
         error: function (xhr, errmsg, err) {
-            console.log("folder deletion failed...")
+            displayAlert(err + ": " + err, "danger", 10 * 1000)
         }
     });
 };
@@ -228,13 +226,11 @@ function share() {
             console.log(response)
             $("#share-user-list").html("");
             $("#share-form")[0].reset()
+            $('#shareModal').modal('hide')
         },
         // handle a non-successful response
         error: function (xhr, errmsg, err) {
-            // $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
-            //     " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
-            // console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
-            console.log("share failed...")
+            displayAlert(err + ": " + err, "danger", 10 * 1000)
         }
     });
 }

@@ -1,5 +1,8 @@
 from django.contrib import admin
-from .models import UserQuota
+from .models import UserPreferences
 
-admin.site.register(UserQuota)
+class UserPreferencesAdmin(admin.ModelAdmin):
+      exclude = ('current_usage_mb',)
+      readonly_fields = ["user"]
 
+admin.site.register(UserPreferences, UserPreferencesAdmin)

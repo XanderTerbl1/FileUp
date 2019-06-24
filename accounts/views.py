@@ -8,7 +8,7 @@ import json
 # django user model
 from django.contrib.auth.models import User
 from myfiles.models import Folder
-from .models import UserQuota
+from .models import UserPreferences
 
 
 @login_required(login_url='/accounts/login')
@@ -23,7 +23,7 @@ def info(request):
     # i.e. number of files
     # Dashboard stuff
 
-    quota = get_object_or_404(UserQuota,  user=user_id)
+    quota = get_object_or_404(UserPreferences,  user=user_id)
     # Convert the model to a dictionary (to pass as Json)
     ser_quota = serializers.serialize('json', [quota, ])
     dict_quota = json.loads(ser_quota)

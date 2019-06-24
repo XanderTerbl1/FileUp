@@ -10,10 +10,6 @@ import json
 import os
 from django.http import Http404
 
-# Temp
-from time import sleep
-
-
 from .models import Folder, File
 from shared.models import SharedFolder
 from shared.views import confirmSharedParent
@@ -50,11 +46,14 @@ def myfiles(request):
     """
     # Used to simulate slow server
     # sleep(2.5)
-
-    root_folder = Folder.objects.get(
+    root_folder, created = Folder.objects.get_or_create(
         name=request.user.username,
         owner=request.user,
-        parent_folder__isnull=True)
+        parent_folder__isnull=True
+    )
+
+    # root_folder = Folder.objects.get(
+    # )
 
     folders = Folder.objects.filter(
         parent_folder=root_folder, owner=request.user, is_recycled=False).order_by('name')
@@ -191,7 +190,7 @@ def upload_file(request):
                 file_source=request.FILES['upload_file']
             )
             file.save()
-
+            messages.success(request, file.name + " uploaded successfully")
             if (request.POST.get("shared_view")):
                 return redirect('shared/content/view/' + str(parent_folder.id))
             else:
@@ -215,14 +214,25 @@ def move(request, file_type):
             id=request.POST['to_id'], owner=owner_id)
 
         if (file_type == "folder"):
-            request_obj = Folder.objects.filter(
-                id=from_id, owner=owner_id).update(parent_folder=to_folder)
-        elif (file_type == "file"):
-            request_obj = File.objects.filter(
-                id=from_id, owner=owner_id).update(parent_folder=to_folder)
+            from_obj = Folder.objects.get(id=from_id, owner=owner_id)
+            from_obj.parent_folder = to_folder
+            from_obj.save()
 
-        if (request_obj is not None):
-            return JsonResponse({"type": file_type, "from_id":  from_id, "to_id": request.POST["to_id"]})
+        elif (file_type == "file"):
+            from_obj = File.objects.get(id=from_id, owner=owner_id)
+            from_obj.parent_folder = to_folder
+            from_obj.save()
+
+        if (from_obj is not None):
+            resp = {
+                "type": file_type,
+                "from_id":  from_id,
+                "to_id": request.POST["to_id"],
+                "from_name": from_obj.name,
+                "to_name": to_folder.name
+            }
+
+            return JsonResponse(resp)
 
 
 @login_required(login_url='/accounts/login')
@@ -286,14 +296,18 @@ def publish(request, file_type):
 
         if (request_obj is not None):
             # host/public/type/id
-            url = request.META['HTTP_HOST'] + \
-                '/public/' + file_type + "/" + str(file_id)
+            rel_path = '/public/' + file_type + "/" + str(file_id)
+            url = request.META['HTTP_HOST'] + rel_path
             request_obj.is_public = True
             request_obj.save()
-            # TODO - Instead of sending an url
-            # redirecting to public app - and adding to 'messages'
-            # could also be an approach
-            return JsonResponse({"id": file_id, "access_link": url})
+
+            resp = {
+                "id": file_id,
+                "access_link": url,
+                "rel_path": rel_path
+            }
+
+            return JsonResponse(resp)
 
 
 @login_required(login_url='/accounts/login')

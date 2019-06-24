@@ -1,5 +1,5 @@
 
-// =============== Folder Restoration  ========================//
+// =============== File Restoration  ========================//
 function restore(id, is_folder) {
     console.log("restore folder is working!"); // sanity check
     $.ajax({
@@ -23,7 +23,7 @@ function restore(id, is_folder) {
     });
 };
 
-// =============== Folder Creation  ========================//
+// =============== Permanent Deletion ========================//
 function perm_delete(id, is_folder) {
     console.log("perm delete folder is working!"); // sanity check
     $.ajax({

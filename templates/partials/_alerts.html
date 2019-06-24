@@ -4,11 +4,6 @@
     <div class="alert alert-{{ message.tags }}" alert-dismissible role="alert">
         <button class="close" type="button" data-dismiss="alert"><span aria-hidden="true">&times;</span></button>
         <strong>
-            {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
-            Error:
-            {% else %}
-            {{ message.tags | title }}
-            {% endif %}
             {{ message }}
         </strong>
     </div>
