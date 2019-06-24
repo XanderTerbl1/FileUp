@@ -56,7 +56,8 @@ function move(from_id, to_id, is_folder) {
         },
 
         error: function (xhr, errmsg, err) {
-            displayAlert(err + ": " + err, "danger", 10 * 1000)
+            displayAlert(xhr.responseJSON["msg"], "danger", 10 * 1000);
+            $('#' + (is_folder ? 'folder' : 'file') + '-' + from_id).removeAttr("style");
         }
     });
 };

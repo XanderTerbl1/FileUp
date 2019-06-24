@@ -12,7 +12,7 @@ def confirmSharedParent(requested_obj, user_id):
     This recursiveley confirms that the file/folder or one if its parent
     are shared with this user.
 
-    TODO This could return the breadcrumb as well    
+    For the shared users, it returns the breadcrumb/trail as well
     '''
     if (requested_obj.is_shared):
         if (SharedFolder.objects.filter(users=user_id, folder=requested_obj)):

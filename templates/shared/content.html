@@ -28,7 +28,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="{% url 'shared' %}" class="droppable" id="folder-{{ root.id }}">
+                <a href="{% url 'shared' %}">
                     <i class="fas fa-home"></i> All Shared Files</a>
             </li>
             {%  for crumb in breadcrumbs %}
@@ -144,11 +144,7 @@
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                         <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}',true)">Rename
                             Folder</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Share...</a>
-                        <a class="dropdown-item" onclick="publish('{{ folder.id }}', true)">Create Public
-                            Link</a>
-                        <a class="dropdown-item" href="#">Something</a>
+                        <a class="dropdown-item" onclick="remove('{{ folder.id }}', true)">Remove Folder</a>
                     </div>
                 </div>
             </td>
@@ -177,10 +173,6 @@
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" onclick="renamePopup('{{ file.id }}',false)">Rename File</a>
                         <a class="dropdown-item" onclick="remove('{{ file.id }}', false)">Remove File</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item">Share...</a>
-                        <a class="dropdown-item" onclick="publish('{{ file.id }}', false)">Create Public Link</a>
-                        <a class="dropdown-item">Something</a>
                     </div>
                 </div>
             </td>

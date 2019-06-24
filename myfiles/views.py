@@ -34,6 +34,21 @@ def confirmUserOwnedParent(requested_obj, user_id):
     return False
 
 
+def confirmUserAccess(requested_obj, user_id):
+     # Is it the user's file?
+    if (requested_obj.owner.id != user_id):
+        print("Failed 1")
+        # Does he own the root/some parent folder?
+        if (not confirmUserOwnedParent(requested_obj, user_id)):
+            print("Failed 2")
+            # Is it a file that was shared with him?
+            if (not confirmSharedParent(requested_obj, user_id)[0]):
+                print("Failed 3")
+                # Then he does not have access to it
+                return False
+    return True
+
+
 @login_required(login_url='/accounts/login')
 def myfiles(request):
     """
@@ -52,13 +67,10 @@ def myfiles(request):
         parent_folder__isnull=True
     )
 
-    # root_folder = Folder.objects.get(
-    # )
-
     folders = Folder.objects.filter(
-        parent_folder=root_folder, owner=request.user, is_recycled=False).order_by('name')
+        parent_folder=root_folder, is_recycled=False).order_by('name')
     files = File.objects.filter(
-        parent_folder=root_folder, owner=request.user, is_recycled=False).order_by('name')
+        parent_folder=root_folder, is_recycled=False).order_by('name')
 
     # The folder/files that need to be served - along with info
     # about the current folder(in this case the root)
@@ -70,28 +82,6 @@ def myfiles(request):
 
     # may change the path later as I feel relevant
     return render(request, 'myfiles/files.html', context)
-
-
-@login_required(login_url='/accounts/login')
-def search(request):
-    query = request.GET["query"]
-    print(query)
-    if (query == ""):
-        return redirect("myfiles")
-
-    cur_user_id = request.user.id
-    folders = Folder.objects.filter(
-        owner=cur_user_id, is_recycled=False, name__icontains=query).order_by('name')
-    files = File.objects.filter(
-        owner=cur_user_id, is_recycled=False, name__icontains=query).order_by('name')
-
-    context = {
-        'folders': folders,
-        'files': files,
-        'query': query,
-    }
-
-    return render(request, 'myfiles/search.html', context)
 
 
 @login_required(login_url='/accounts/login')
@@ -144,6 +134,28 @@ def folders(request, folder_id):
     }
 
     return render(request, 'myfiles/files.html', context)
+
+
+@login_required(login_url='/accounts/login')
+def search(request):
+    query = request.GET["query"]
+    print(query)
+    if (query == ""):
+        return redirect("myfiles")
+
+    cur_user_id = request.user.id
+    folders = Folder.objects.filter(
+        owner=cur_user_id, is_recycled=False, name__icontains=query).order_by('name')
+    files = File.objects.filter(
+        owner=cur_user_id, is_recycled=False, name__icontains=query).order_by('name')
+
+    context = {
+        'folders': folders,
+        'files': files,
+        'query': query,
+    }
+
+    return render(request, 'myfiles/search.html', context)
 
 
 @login_required(login_url='/accounts/login')
@@ -207,23 +219,34 @@ def move(request, file_type):
     if request.method == 'POST':
         # File/Folder to be moved.
         from_id = request.POST['from_id']
-        owner_id = request.user.id
+        current_user_id = request.user.id
 
         # the folder to where it will be moved.
-        to_folder = Folder.objects.get(
-            id=request.POST['to_id'], owner=owner_id)
+        to_folder = Folder.objects.get(id=request.POST['to_id'])
+
+        # Does the user have access to the folder
+        # he is trying to move it to?
+        if (not confirmUserAccess(to_folder, current_user_id)):
+            print("User does not have access")
+            raise Http404
 
         if (file_type == "folder"):
-            from_obj = Folder.objects.get(id=from_id, owner=owner_id)
-            from_obj.parent_folder = to_folder
-            from_obj.save()
-
+            from_obj = Folder.objects.get(id=from_id)
         elif (file_type == "file"):
-            from_obj = File.objects.get(id=from_id, owner=owner_id)
-            from_obj.parent_folder = to_folder
-            from_obj.save()
+            from_obj = File.objects.get(id=from_id)
+
+        # # Does the owner have access to the folder
+        # # that it is being moved to?
+        # # (Can't deny an owner access to his file)
+        # if (not confirmUserAccess(to_folder, from_obj.owner.id)):
+        #     print("")
+        #     return JsonResponse({"msg": "Can't move object out of owner's reach"}, status=406)
+        # Owner of the shared folder can do any operations with the files in the shared folder.
 
         if (from_obj is not None):
+            from_obj.parent_folder = to_folder
+            from_obj.save()
+
             resp = {
                 "type": file_type,
                 "from_id":  from_id,
@@ -239,43 +262,64 @@ def move(request, file_type):
 def rename(request, file_type):
     if request.method == 'POST':
         file_id = request.POST['id']
-        owner_id = request.user.id
+        current_user_id = request.user.id
         name = request.POST['name']
 
         if (file_type == "folder"):
-            request_obj = Folder.objects.filter(
-                id=file_id, owner=owner_id).update(name=name)
+            request_obj = Folder.objects.get(id=file_id)
         elif (file_type == "file"):
-            request_obj = File.objects.filter(
-                id=file_id, owner=owner_id).update(name=name)
+            request_obj = File.objects.get(id=file_id)
 
         if (request_obj is not None):
+            # Does the user have access?
+            if (not confirmUserAccess(request_obj, current_user_id)):
+                print("User does not have access")
+                raise Http404
+
+            request_obj.name = name
+            request_obj.save()
             return JsonResponse({"id":  file_id, "name": name})
 
 
 @login_required(login_url='/accounts/login')
 def remove(request, file_type):
     '''
-    Move the file/folder to the recycle bin 
-    where it will stay x ammount of time 
+    Move the file/folder to the recycle bin
+    where it will stay x ammount of time
     before being deleted
+
+    When a user deletes a file that didnt originally
+    belong to him - it will be deleted perm directly
 
     tags: DELETE/REMOVE/MOVE TO RECYCLE BIN
     '''
     if request.method == 'POST':
-        file_id = request.POST['id']
-        owner_id = request.user.id
+        request_obj_id = request.POST['id']
+        current_user_id = request.user.id
 
         if (file_type == "folder"):
-            request_obj = Folder.objects.get(id=file_id, owner=owner_id)
+            request_obj = Folder.objects.get(id=request_obj_id)
         elif (file_type == "file"):
-            request_obj = File.objects.get(id=file_id, owner=owner_id)
+            request_obj = File.objects.get(id=request_obj_id)
 
         if (request_obj is not None):
+            if (not confirmUserAccess(request_obj, current_user_id)):
+                print("User does not have access")
+                raise Http404
+
+            if (request_obj.owner.id != current_user_id):
+                # deleting someone elses stuff..
+                # Decide what to do when someone - that may delete
+                # A folder that is not their's - delete it.
+                # Whos recycle bin? Or no recycle bin?
+                # I say no recycle bin
+                # TODO
+                pass
+
             request_obj.is_recycled = True
             request_obj.save()
 
-            return JsonResponse({"id": file_id})
+            return JsonResponse({"id": request_obj_id})
 
 
 @login_required(login_url='/accounts/login')
