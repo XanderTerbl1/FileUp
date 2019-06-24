@@ -11,6 +11,11 @@ from myfiles.models import Folder
 from .models import UserPreferences
 
 
+
+@login_required(login_url='/accounts/login')
+def dashboard(request):
+    return render(request, 'accounts/dashboard.html')
+
 @login_required(login_url='/accounts/login')
 def info(request):
     """

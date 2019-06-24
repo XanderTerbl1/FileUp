@@ -22,7 +22,8 @@
             class="list-group-item {% if 'shared' in request.path %} selected {% endif %}">Shared Files</a>
         <a href="{% url 'recyclebin' %}"
             class="list-group-item {% if 'recyclebin' in request.path %} selected {% endif %}">Recycle Bin</a>
-        <a href="#" class="list-group-item">Dashboard</a>
+        <a href="{% url 'dashboard' %}"
+            class="list-group-item {% if 'dashboard' in request.path %} selected {% endif %}">Dashboard</a>
         <!-- Put logout inside the dashboard -->
         <a href="javascript:{document.getElementById('logout').submit()}" class="list-group-item">Logout</a>
         <form action="{% url 'logout' %}" method="POST" id="logout">
