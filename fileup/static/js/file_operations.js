@@ -155,7 +155,8 @@ function remove(id, is_folder) {
 
         success: function (file) {
             $('#' + (is_folder ? 'folder' : 'file') + '-' + file.id + '-row').remove();
-            console.log(file)
+            var msg = "'" + file.name + "' moved to recycle bin";
+            displayAlert(msg, "success", 5 * 1000);
         },
 
         error: function (xhr, errmsg, err) {

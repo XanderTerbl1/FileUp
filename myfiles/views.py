@@ -15,6 +15,7 @@ from shared.models import SharedFolder
 from shared.views import confirmSharedParent
 from accounts.models import UserPreferences
 from decimal import Decimal
+from public.views import confirmPublicParent
 
 
 def confirmUserOwnedParent(requested_obj, user_id):
@@ -352,7 +353,7 @@ def remove(request, file_type):
             request_obj.is_recycled = True
             request_obj.save()
 
-            return JsonResponse({"id": request_obj_id})
+            return JsonResponse({"id": request_obj_id, 'name': request_obj.name})
 
 
 @login_required(login_url='/accounts/login')
@@ -425,20 +426,19 @@ def share(request):
 
 
 def download(request, file_id):
-    '''
-    Currently we are serving the user the contents of the file
-    inside his browser.
-
+    '''    
     This was easier/faster than making protected links. This way works
     We are just relying on the mime type to always work...
     '''
 
-    # check if the user has access to this file
-    # doesnt have to be the owner if the file is public
-    # or shared
     file_obj = File.objects.get(id=file_id)
+    if (request.user.is_authenticated):
+        if (not confirmUserAccess(file_obj, request.user.id)):
+            raise Http404
+    elif (not confirmPublicParent(file_obj)):
+        raise Http404
+
     file_path = file_obj.file_source.url[1:]
-    print(file_path)
     if os.path.exists(file_path):
         print("True")
         with open(file_path, 'rb') as fh:
@@ -447,5 +447,5 @@ def download(request, file_id):
             response['Content-Disposition'] = 'inline; filename=' + \
                 os.path.basename(file_path)
             return response
-    print("wtf")
+
     raise Http404
