@@ -198,7 +198,7 @@ function sharePopup(id, is_folder) {
             user = users[i];
             share_users.append(`            
                 <div class="checkbox">
-                    <label><input type="checkbox" name='user_ids' value="` + user.id + `">` + user.first_name + ' ' + user.last_name + '  (' + user.email + `)</label>
+                    <label><input type="checkbox" name='user_ids[]' value="` + user.id + `">` + user.first_name + ' ' + user.last_name + '  (' + user.email + `)</label>
                 </div>
             `);
         }

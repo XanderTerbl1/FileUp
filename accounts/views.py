@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import auth, messages
 from django.core import serializers
 from django.http import JsonResponse
+from .models import UserPreferences
 import json
 
 # django user model
@@ -19,8 +20,8 @@ def dashboard(request):
         list(Folder.objects.all().filter(owner_id=user_id).values("id"))) - 1
     file_count = len(
         list(File.objects.all().filter(owner_id=user_id).values("id")))
-    perc_used = (user_preferences.current_usage_mb /
-                 user_preferences.max_usage_mb)*100
+    perc_used = round((user_preferences.current_usage_mb /
+                       user_preferences.max_usage_mb)*100, 2)
 
     context = {
         'folder_count': folder_count,
@@ -32,6 +33,7 @@ def dashboard(request):
     return render(request, 'accounts/dashboard.html', context)
 
 
+@login_required(login_url='/accounts/login')
 def save_preferences(request):
     if (request.method == 'POST'):
         cur_user = request.user
@@ -103,21 +105,19 @@ def register(request):
         password2 = request.POST['password2']
 
         # Validate Fields
-        # if (password != password2):
-        #     messages.error(request, "Passwords do not match")
-        #     return redirect('register')
+        if (password != password2):
+            messages.error(request, "Passwords do not match")
+            return redirect('register')
 
-        # if (User.objects.filter(username=username).exists()):
-        #     messages.error(request, "Username is already taken")
-        #     return redirect('register')
-
-        # if (User.objects.filter(email=email).exists()):
-        #     messages.error(request, "Email is already taken")
-        #     return redirect('register')
+        if (User.objects.filter(username=username).exists()):
+            messages.error(request, "Email is already taken")
+            return redirect('register')
 
         user = User.objects.create_user(
             username=username, password=password, email=email, first_name=first_name, last_name=last_name)
         user.save()
+
+        userpref, created = UserPreferences.objects.get_or_create(user=user)
 
         # Create the user's root-folder
         root_folder = Folder(name=username, owner_id=user.id)

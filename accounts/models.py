@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 
 class UserPreferences(models.Model):
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     # should this be dynamically calculated?
     # No... on upload/create of files/folder
     # determine who will be billed for it..
