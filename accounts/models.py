@@ -14,7 +14,7 @@ class UserPreferences(models.Model):
         default=1000, decimal_places=2, max_digits=7, help_text="This value CAN'T be altered by normal users")
 
     recyclebin_lifetime = models.IntegerField(
-        default=60, name="Recyclebin Lifetime (Days)",  help_text="Normal users may change this value.")
+        default=60, help_text="Recycle bin lifetime (days). Normal users may change this value.")
 
     def __str__(self):
         return self.user.username

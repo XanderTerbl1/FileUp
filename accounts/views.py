@@ -7,14 +7,47 @@ import json
 
 # django user model
 from django.contrib.auth.models import User
-from myfiles.models import Folder
+from myfiles.models import Folder, File
 from .models import UserPreferences
-
 
 
 @login_required(login_url='/accounts/login')
 def dashboard(request):
-    return render(request, 'accounts/dashboard.html')
+    user_id = request.user.id
+    user_preferences = get_object_or_404(UserPreferences,  user=user_id)
+    folder_count = len(
+        list(Folder.objects.all().filter(owner_id=user_id).values("id"))) - 1
+    file_count = len(
+        list(File.objects.all().filter(owner_id=user_id).values("id")))
+    perc_used = (user_preferences.current_usage_mb /
+                 user_preferences.max_usage_mb)*100
+
+    context = {
+        'folder_count': folder_count,
+        'file_count': file_count,
+        'user_preferences': user_preferences,
+        'percentage_used': perc_used,
+    }
+
+    return render(request, 'accounts/dashboard.html', context)
+
+
+def save_preferences(request):
+    if (request.method == 'POST'):
+        cur_user = request.user
+        info = get_object_or_404(UserPreferences, user=cur_user)
+        if (request.POST['recycle_lifetime']):
+            info.recyclebin_lifetime = request.POST['recycle_lifetime']
+        if (request.POST['first_name']):
+            cur_user.first_name = request.POST['first_name']
+        if (request.POST['last_name']):
+            cur_user.last_name = request.POST['last_name']
+
+        info.save()
+        cur_user.save()
+        messages.success(request, "User Info updated.")
+        return redirect('dashboard')
+
 
 @login_required(login_url='/accounts/login')
 def info(request):
