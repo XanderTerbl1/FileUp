@@ -2,6 +2,9 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from myfiles.models import File, Folder
+from myfiles.views import getLiableOwner
+from accounts.models import UserPreferences
+from decimal import Decimal
 
 
 @login_required(login_url='/accounts/login')
@@ -53,15 +56,20 @@ def perm_delete(request, file_type):
         owner_id = request.user.id
 
         if file_type == 'folder':
-            # We only need to check if the user owns the root
-            # of the folder trying to be deleted.
             root = Folder.objects.get(id=file_id, owner=owner_id)
             total_deleted = delete_recursvie(root)
-
             return JsonResponse({"id": file_id, "total_deleted": total_deleted})
+
         elif file_type == "file":
-            files = File.objects.filter(
-                id=file_id, owner=owner_id).delete()
+            f = File.objects.get(id=file_id, owner=owner_id)
+            owner = getLiableOwner(f)
+
+            size = f.file_source.size/1000000
+            compensateLiableOwner(owner, [size, ])
+
+            f.file_source.delete()
+            f.delete()
+
             return JsonResponse({"id": file_id, "total_deleted": 1})
 
 
@@ -76,8 +84,27 @@ def delete_recursvie(folder):
         total_deleted += delete_recursvie(f)
 
     # TODO - Delete the files from the server as well!
-    files = File.objects.filter(parent_folder=folder).delete()
-    total_deleted += files[0]
+    files = File.objects.filter(parent_folder=folder)
+    sizes = []
+    for f in files:
+        sizes.append((f.file_source.size / 1000000))
+        f.file_source.delete()
+
+    owner = getLiableOwner(folder)
+    compensateLiableOwner(owner, sizes)
+
+    count = files.delete()
+    total_deleted += count[0]
 
     folder.delete()
     return (total_deleted + 1)
+
+
+def compensateLiableOwner(owner, sizes):
+    total = Decimal(sum(sizes))
+    userprefs = UserPreferences.objects.get(user=owner)
+    if (userprefs.current_usage_mb - total < 0):
+        userprefs.current_usage_mb = 0
+    else:
+        userprefs.current_usage_mb -= total
+    userprefs.save()

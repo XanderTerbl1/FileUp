@@ -13,6 +13,8 @@ from django.http import Http404
 from .models import Folder, File
 from shared.models import SharedFolder
 from shared.views import confirmSharedParent
+from accounts.models import UserPreferences
+from decimal import Decimal
 
 
 def confirmUserOwnedParent(requested_obj, user_id):
@@ -32,6 +34,20 @@ def confirmUserOwnedParent(requested_obj, user_id):
             return True
         parent = parent.parent_folder
     return False
+
+
+def getLiableOwner(directory_item):
+    """
+    Fetches the owner that ought to be charged for the file
+    just uploaded.
+    Recall - OWNERS of shared folders are charged for the entire shared folder     
+    """
+    # Check who owns the highest parent
+    parent = directory_item
+    while (parent.parent_folder):
+        parent = parent.parent_folder
+
+    return parent.owner
 
 
 def confirmUserAccess(requested_obj, user_id):
@@ -194,15 +210,32 @@ def upload_file(request):
             file_name = request.FILES.get("upload_file").name
             file_type = file_name.split(".")[-1]  # (^_^)
 
-            file = File(
-                name=file_name,
-                owner=request.user,
-                parent_folder=parent_folder,
-                file_type=file_type,
-                file_source=request.FILES['upload_file']
-            )
-            file.save()
-            messages.success(request, file.name + " uploaded successfully")
+            file_size = Decimal(
+                request.FILES['upload_file'].size / 1000000)  # to mb
+            liable_owner = getLiableOwner(parent_folder)
+
+            # Is there enough space?
+            prefs = get_object_or_404(UserPreferences, user=liable_owner)
+            if (prefs.max_usage_mb - prefs.current_usage_mb > file_size):
+                file = File(
+                    name=file_name,
+                    owner=request.user,
+                    parent_folder=parent_folder,
+                    file_type=file_type,
+                    file_source=request.FILES['upload_file']
+                )
+                file.save()
+
+                prefs.current_usage_mb += file_size
+                prefs.save()
+                messages.success(request, file.name + " uploaded successfully")
+            else:
+                addressed = "You do " if liable_owner == request.user else 'The liable user (' + \
+                    liable_owner.username + ') does'
+
+                messages.error(
+                    request, addressed + ' not have enough space to store this file')
+
             if (request.POST.get("shared_view")):
                 return redirect('shared/content/view/' + str(parent_folder.id))
             else:
@@ -367,7 +400,7 @@ def share(request):
             request_obj = File.objects.get(id=file_id, owner=owner_id)
 
         if (request_obj is not None):
-            if (request.POST.get("user_ids")):
+            if (request.POST.get("user_ids[]")):
                 request_obj.is_shared = True
             else:
                 request_obj.is_shared = False
@@ -383,7 +416,8 @@ def share(request):
             if (not created):
                 shared.users.clear()
 
-            for id in request.POST["user_ids"]:
+            for id in request.POST.getlist("user_ids[]"):
+                print(id)
                 shared.users.add(id)
 
             shared.save()
