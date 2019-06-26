@@ -37,6 +37,7 @@ function perm_delete(id, is_folder) {
             $('#' + (is_folder ? 'folder' : 'file') + '-' + response.id + '-row').remove();
             //Do something with the total-deleted messages
             console.log("^^")
+            loadQuotaInfo();
         },
         // handle a non-successful response
         error: function (xhr, errmsg, err) {

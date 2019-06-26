@@ -109,30 +109,41 @@ $('#folder-create-form').on('submit', function (event) {
 
 function create_folder() {
     console.log("create folder is working!"); // sanity check
-    console.log($('#folder-create-form').attr('action')); // sanity check
     $.ajax({
-        url: $('#folder-create-form').attr('action'), // the endpoint
+        url: '/create_folder', // the endpoint
         type: "POST", // http method
         data: $("#folder-create-form").serialize(), // data sent with the post request
 
         // handle a successful response
-        success: function (folder) {
-            //Add the newly created file with the info you got from the request    
-            console.log(folder)
+        success: function (response) {
+            folder_href = (response.shared ? "/shared/content/view/" : "/folders/")
             $("#file-view-body").prepend(`
-                <tr>s
-                <td>
-                    <a href="/folders/` + folder.pk + `">
-                        <i class="fas fa-folder"></i>
-                        ` + folder.fields.name + ` </a>
-                </td>
-                <td>folder</td>
-                <td>me</td>
-                <td>just now</td>
-                <td> - </td>
-                <td> <i class="fas fa-ellipsis-v"></i></td>
-            </tr>`
-            );
+        <tr id="folder-` + response.folder.pk + `-row" class="file-row">
+            <td>
+                <a href="` + folder_href + response.folder.pk + `" class="droppable draggable ui-draggable ui-draggable-handle ui-droppable" id="folder-` + response.folder.pk + `" style="position: relative;">
+                     <i class="fas fa-folder"></i>
+                    <span id="folder-` + response.folder.pk + `-name">` + response.folder.fields.name + `</span>
+                </a>
+            </td>
+            <td>folder
+            </td>
+            <td>` + 'me' + `</td>
+            <td>just now</td>
+            <td>-</td>
+            <td>
+                <div class="dropleft">
+                    <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" onclick="renamePopup('` + response.folder.pk + `',true)">Rename folder</a>
+                        <a class="dropdown-item" onclick="remove('` + response.folder.pk + `', true)">Remove folder</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" onclick="sharePopup('` + response.folder.pk + `',true)">Share folder</a>
+                        <a class="dropdown-item" onclick="publish('` + response.folder.pk + `', true)">Create Public Link</a>
+                    </div>
+                </div>
+            </td>
+        </tr>    
+            `);
 
             $("#folder-create-form")[0].reset()
             $('#createFolderModel').modal('hide')

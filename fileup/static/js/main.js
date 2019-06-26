@@ -1,6 +1,6 @@
 $(document).ready(function () {
     setAlertTimeOut();
-    loadAccountInfo();
+    loadQuotaInfo();
 });
 
 //=============== Alerts ==============================
@@ -54,9 +54,9 @@ function getCookie(name) {
     return cookieValue;
 }
 
-function loadAccountInfo() {
+function loadQuotaInfo() {
     $.ajax({
-        url: "/accounts/info", // the endpoint
+        url: "/accounts/quota_info", // the endpoint
         type: "GET", // http method
 
         // handle a successful response

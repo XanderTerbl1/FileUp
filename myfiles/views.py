@@ -181,6 +181,9 @@ def create_folder(request):
         parent_folder = Folder.objects.get(
             id=request.POST['current_folder_id'])
 
+        shared = True if request.POST.get('shared') else False
+        print(shared)
+        
         # create and save the new folder
         folder = Folder(
             name=folder_name,
@@ -191,12 +194,14 @@ def create_folder(request):
 
         # Serailize Folder
         ser_folder = serializers.serialize('json', [folder, ])
-
         # Convert to 'dictionary'
         struct = json.loads(ser_folder)
 
-        # [0] gets rid of the array wrapper
-        return JsonResponse(struct[0])
+        resp = {
+            "folder" : struct[0],
+            "shared" : shared
+        }
+        return JsonResponse(resp)
 
 
 @login_required(login_url='/accounts/login')

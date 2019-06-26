@@ -52,23 +52,21 @@ def save_preferences(request):
 
 
 @login_required(login_url='/accounts/login')
-def info(request):
+def quota_info(request):
     """
-    Returns info about current user as JsonResponse
+    Returns user quota info as JSON
     """
-    user_id = request.user.id
+    user = get_object_or_404(User, id=request.user.id)
+    quota, created = UserPreferences.objects.get_or_create(user=user)
 
-    # Add different types of info
-    # i.e. number of folders
-    # i.e. number of files
-    # Dashboard stuff
-
-    quota = get_object_or_404(UserPreferences,  user=user_id)
-    # Convert the model to a dictionary (to pass as Json)
     ser_quota = serializers.serialize('json', [quota, ])
     dict_quota = json.loads(ser_quota)
 
-    return JsonResponse({"quota": dict_quota[0]['fields']})
+    resp = {
+        'quota': dict_quota[0]['fields']
+    }
+
+    return JsonResponse(resp)
 
 
 @login_required(login_url='/accounts/login')
