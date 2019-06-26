@@ -115,3 +115,26 @@ function getGroupViewableList(callback) {
         }
     });
 }
+
+//Gets a list of all the users that a certain file/folder
+//has been shared with
+function getSharedUsers(id, file_type, callback) {
+    $.ajax({
+        url: "/shared/participants/" + id,
+        type: "POST", // http method
+        data: {
+            "file_type": file_type,
+            "csrfmiddlewaretoken": getCookie('csrftoken')
+        },
+
+        // handle a successful response
+        success: function (response) {
+            console.log(response)
+            callback(response);
+        },
+        // handle a non-successful response
+        error: function (xhr, errmsg, err) {
+            console.log("Get shared users failed...")
+        }
+    });
+}

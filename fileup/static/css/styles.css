@@ -7,6 +7,8 @@ Color Scheme
 - #63ace5
 */
 
+
+
 .file-controls button:hover {
     background: #2a4d69 !important;
 }
@@ -103,39 +105,3 @@ a:hover {
 input[type="file"] {
     display: none;
 }
-
-/*
-
-.page-heading {
-    color: #474747;
-    font-size: 20px;
-    font-weight: bold;
-    padding: 20px 0px;
-}
-
-.page-breadcrumbs {
-    color: #999999;
-    font-size: 14px;
-}
-
-.card {
-    border-radius: 20px;
-    box-shadow: 0px 0px 3px #c1c1c1;
-    margin: 5px 0px;
-    color: #474747;
-    cursor: pointer;
-}
-
-.card:hover {
-    color: #4b86b4;
-}
-
-.card-body {
-    padding: 10px;
-}
-
-.card-heading {
-    margin: 15px 0px;
-    font-weight: bold;
-}
-*/

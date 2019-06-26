@@ -11,20 +11,22 @@
     </div>
 </div>
 
+<!-- Breadcrumb -->
+<section id="bc" class="mt-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'shared' %}">
+                    <i class="fas fa-home"></i> All Shared Files</a>
+            </li>
+        </ol>
+    </nav>
+</section>
+
 <div class="container-fluid mt-2">
-    <p>Files in the recycle bin still accounts for storage used.</p>
-    <p>All files will be removed from the recycle bin after 60 days from deletion.</p>
-</div>
-
-
-<!-- File/Folder Controls-Buttonbar -->
-<div class="file-controls mb-3">
-    <div class="btn-group" role="group" aria-label="Basic example">
-        <form action="{% url 'search' %}" id="search-form">
-            <input class="form-control ml-2" type="search" placeholder="Search" aria-label="Search" name="query">
-        </form>
-        <button type="button" class="btn mr-2" id="search-submit">Search</button>
-    </div>
+    <p>Files you shared with other people will still be part of your<a href="{% url 'myfiles' %}"> personal file
+            directory</a>
+    </p>
 </div>
 
 <table class="table table-hover file-view">
@@ -35,40 +37,15 @@
             <th scope="col">Owner</th>
             <th scope="col">Created</th>
             <th scope="col">Size</th>
+            <th scope="col"></th>
         </tr>
     </thead>
     <tbody id="file-view-body">
 
-        {% for folder in folders %}
-        <tr id="folder-{{ folder.id }}-row">
-            <td>
-                <a href="{% url 'shared_content' folder.id %}" class="droppable draggable" id="folder-{{ folder.id }}">
-                    <i class="fas fa-folder"></i>
-                    <span id="folder-{{ folder.id }}-name">{{ folder.name }}</span>
-                </a>
-            </td>
-            <td>folder {% if folder.is_public %}| <i class="fas fa-globe" title="Public Folder"></i>{% endif %}</td>
-            <td>{{ folder.owner.first_name }}</td>
-            <td>{{ folder.date_created |timesince }} ago</td>
-            <td>-</td>
-        </tr>
-        {% endfor %}
-
-        <!-- FILES -->
-        {% for file in files %}
-        <tr id="file-{{ file.id }}-row">
-            <td>
-                <a href="{% url 'download' file.id %}" class="draggable" id="file-{{ file.id }}">
-                    <i class="fas fa-file"></i>
-                    <span id="file-{{ file.id }}-name">{{ file.name }}</span></a>
-            </td>
-            <td>{{ file.file_type }} {% if file.is_public %} | <i class="fas fa-globe"
-                    title="Public File"></i>{% endif %}</td>
-            <td>{{ file.owner.first_name }}</td>
-            <td>{{ file.date_created |timesince }} ago</td>
-            <td>{{ file.file_source.size }}</td>
-        </tr>
-        {% endfor %}
+        <!-- Folders -->
+        {% include 'partials/_folder-row.html' %}
+        <!-- Files -->
+        {% include 'partials/_file-row.html' %}
 
     </tbody>
 </table>

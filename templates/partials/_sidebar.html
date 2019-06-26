@@ -5,10 +5,12 @@
     {% if user.is_authenticated %}
     <div class="container">
         <p class="user-name">{{ user.first_name }} {{ user.last_name }}</p>
-        <div class="progress">
-            <div class="progress-bar" id="quota-sidebar-progressbar" role="progressbar" aria-valuemin="0"
-                aria-valuemax="100"></div>
-        </div>
+        <a href="{% url 'dashboard' %}">
+            <div class="progress">
+                <div class="progress-bar" id="quota-sidebar-progressbar" role="progressbar" aria-valuemin="0"
+                    aria-valuemax="100"></div>
+            </div>
+        </a>
         <p class="user-usage-info" id="quota-sidebar-info"></p>
     </div>
     {% endif %}

@@ -26,8 +26,9 @@
 
 <div class="container-fluid m-3">
     <p>
-        Showing search results for ''{{ query }}''
+        Showing search results for ''{{ query }}'' ...
     </p>
+    <p>(Only your files are included in the search)</p>
 </div>
 
 
@@ -68,66 +69,11 @@
     </thead>
     <tbody id="file-view-body">
 
-        {% for folder in folders %}
-        <tr id="folder-{{ folder.id }}-row">
-            <td>
-                <a href="{% url 'folders' folder.id %}" class="droppable draggable" id="folder-{{ folder.id }}">
-                    <i class="fas fa-folder"></i>
-                    <span id="folder-{{ folder.id }}-name">{{ folder.name }}</span>
-                </a>
-            </td>
-            <td>folder {% if folder.is_public %}| <i class="fas fa-globe" title="Public Folder"></i>{% endif %}</td>
-            <td>{{ folder.owner.first_name }}</td>
-            <td>{{ folder.date_created |timesince }} ago</td>
-            <td>-</td>
-            <td>
-                <div class="dropleft">
-                    <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
-                        aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}',true)">Rename Folder</a>
-                        <a class="dropdown-item" onclick="remove('{{ folder.id }}', true)">Delete Folder</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Share...</a>
-                        <a class="dropdown-item" onclick="publish('{{ folder.id }}', true)">Create Public Link</a>
-                        <a class="dropdown-item" href="#">Something</a>
-                    </div>
-                </div>
-            </td>
-        </tr>
-        {% endfor %}
+        <!-- Folders -->
+        {% include 'partials/_folder-row.html' %}
 
-        <!-- FILES -->
-        {% for file in files %}
-        <tr id="file-{{ file.id }}-row">
-            <td>
-                <a href="{% url 'download' file.id %}" class="draggable" id="file-{{ file.id }}">
-                    <i class="fas fa-file"></i>
-                    <span id="file-{{ file.id }}-name">{{ file.name }}</span></a>
-            </td>
-            <td>{{ file.file_type }} {% if file.is_public %} | <i class="fas fa-globe"
-                    title="Public File"></i>{% endif %}</td>
-            <td>{{ file.owner.first_name }}</td>
-            <td>{{ file.date_created |timesince }} ago</td>
-            <td>{{ file.file_source.size }}</td>
-            <td>
-                <div class="dropleft">
-                    <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
-                        aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a href="{% url 'download' file.id %}" class="dropdown-item">Download File</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" onclick="renamePopup('{{ file.id }}',false)">Rename File</a>
-                        <a class="dropdown-item" onclick="remove('{{ file.id }}', false)">Remove File</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item">Share...</a>
-                        <a class="dropdown-item" onclick="publish('{{ file.id }}', false)">Create Public Link</a>
-                        <a class="dropdown-item">Something</a>
-                    </div>
-                </div>
-            </td>
-        </tr>
-        {% endfor %}
+        <!-- Files -->
+        {% include 'partials/_file-row.html' %}
 
     </tbody>
 </table>

@@ -3,6 +3,7 @@ from django.http import Http404
 from django.contrib.auth.decorators import login_required
 from .models import SharedFolder, SharedFile
 from myfiles.models import Folder, File
+from django.http import JsonResponse
 
 
 def confirmSharedParent(requested_obj, user_id):
@@ -38,12 +39,12 @@ def shared(request):
     """
     The root for all shared folders with this user.
     For now - it only displays all the folders shared with him
-    (Not the files he shared) 
+    (Not the files he shared)
 
     To Add
     [X] Shared With Me Files
     [ ] Files I Shared
-    [ ] Shared via group    
+    [ ] Shared via group
     """
 
     folders = Folder.objects.filter(sharedfolder__in=SharedFolder.objects.filter(
@@ -74,7 +75,6 @@ def shared_content(request, folder_id):
         context = {
             'folders': folders,
             'files': files,
-            # 'root': root_folder,
             'breadcrumbs': breadcrumb,
             'current': requested_folder
         }
@@ -82,3 +82,38 @@ def shared_content(request, folder_id):
         return render(request, 'shared/content.html', context)
     else:
         raise Http404
+
+
+@login_required(login_url='/accounts/login')
+def participants(request, file_id):
+    '''
+    Returns a list of Users and Groups that a 
+    certain file/folder is shared with 
+    '''
+    if request.method == 'POST':
+        file_type = request.POST.get("file_type")
+
+        try:
+            if (file_type == "folder"):
+                shared = SharedFolder.objects.get(
+                    folder=file_id
+                )
+                owner_id = shared.folder.owner.id
+
+            else:
+                shared = SharedFile.objects.get(
+                    file=file_id
+                )
+                owner_id = shared.file.owner.id
+
+        except SharedFolder.DoesNotExist:
+            return JsonResponse({"users": []})
+        except SharedFile.DoesNotExist:
+            return JsonResponse({"users": []})
+
+        if (owner_id != request.user.id):
+            if (not shared.users.all().filter(id=request.user.id)):
+                # User does not have access to this info
+                raise Http404
+
+        return JsonResponse({"users": list(shared.users.all().values("id", "first_name", "last_name", "email"))})

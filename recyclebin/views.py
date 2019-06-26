@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from myfiles.models import File, Folder
@@ -12,7 +12,7 @@ def recylebin(request):
     """
     Serves current user all his recycled folders and files.
     # Recycled folders has to be restored in order to traverse them.
-    # File Hierarchy wont be kept in recycle bin (i.e. all deleted items are same level)       
+    # File Hierarchy wont be kept in recycle bin (i.e. all deleted items are same level)
     """
     cur_user_id = request.user.id
 
@@ -31,18 +31,26 @@ def recylebin(request):
 @login_required(login_url='/accounts/login')
 def restore(request, file_type):
     if request.method == 'POST':
-        file_id = request.POST['id']
         owner_id = request.user.id
+        # Restore All Files and Folders
+        if (file_type == "all"):
+            Folder.objects.filter(owner_id=owner_id,
+                                  is_recycled=True).update(is_recycled=False)
+            File.objects.filter(owner_id=owner_id,
+                                is_recycled=True).update(is_recycled=False)
+            return redirect('recyclebin')
+        else:
+            # Restore selected file/folder
+            file_id = request.POST['id']
+            if (file_type == "folder"):
+                request_obj = Folder.objects.get(id=file_id, owner=owner_id)
+            elif (file_type == "file"):
+                request_obj = File.objects.get(id=file_id, owner=owner_id)
 
-        if (file_type == "folder"):
-            request_obj = Folder.objects.get(id=file_id, owner=owner_id)
-        elif (file_type == "file"):
-            request_obj = File.objects.get(id=file_id, owner=owner_id)
-
-        if (request_obj is not None):
-            request_obj.is_recycled = False
-            request_obj.save()
-            return JsonResponse({"id": file_id})
+            if (request_obj is not None):
+                request_obj.is_recycled = False
+                request_obj.save()
+                return JsonResponse({"id": file_id})
 
 
 @login_required(login_url='/accounts/login')

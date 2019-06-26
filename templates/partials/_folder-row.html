@@ -1,0 +1,74 @@
+{% for folder in folders %}
+<tr id="folder-{{ folder.id }}-row" class="file-row">
+    <td>
+        <a 
+        {% if 'public' in request.path %}
+        href="{% url 'public_content' folder.id %}"
+        {% endif %}
+        
+        {%  if request.path == "/shared/" %}
+        href="{% url 'shared_content' folder.id %}"
+        {% endif %}
+
+        {% if 'shared/content/view' in request.path %}
+        href="{% url 'shared_content' folder.id %}" class="droppable draggable" id="folder-{{ folder.id }}"
+        {% endif %}
+
+        {% if request.path == '/' or 'folders' in request.path or 'search' in request.path %}
+        href="{% url 'folders' folder.id %}" class="droppable draggable" id="folder-{{ folder.id }}"
+        {% endif %}
+        
+        {% if 'recyclebin' in request.path %}
+        href=""
+        {% endif %}
+        >
+             <i class="fas fa-folder"></i>
+            <span id="folder-{{ folder.id }}-name">{{ folder.name }}</span>
+        </a>
+    </td>
+    <td>folder
+        {% if folder.is_public %} | <i class="fas fa-globe" title="Public Folder"></i>{% endif %}
+        {% if folder.is_shared %} | <i class="fas fa-users" title="Shared Folder"></i>{% endif %}
+    </td>
+    <td>{{ folder.owner.first_name }}</td>
+    {% if 'recyclebin' in request.path %}
+    <td>{{ folder.date_recycled}}</td>
+    {% else %}
+    <td>{{ folder.date_created |timesince }} ago</td>
+    {% endif %}
+    <td>-</td>
+    <td>
+        <div class="dropleft">
+            <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <!-- MY FILE/MAIN ACTIONS -->
+                {% if request.path == '/' or 'folders' in request.path or 'search' in request.path %}
+                <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}',true)">Rename folder</a>
+                <a class="dropdown-item" onclick="remove('{{ folder.id }}', true)">Remove folder</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" onclick="sharePopup('{{ folder.id }}',true)">Share folder</a>
+                <a class="dropdown-item" onclick="publish('{{ folder.id }}', true)">Create Public Link</a>
+                {% endif %}
+
+                <!-- SHARED ROOT & PUBLIC FILES-->
+                {% if request.path == "/shared/"  or 'public' in request.path %}
+                <a class="dropdown-item">No Actions Available</a>
+                {% endif %}
+
+                <!-- SHARED FILES VIEW -->
+                {% if 'shared/content/view' in request.path %}
+                <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}',true)">Rename folder</a>
+                <a class="dropdown-item" onclick="remove('{{ folder.id }}', true)">Remove folder</a>
+                {% endif %}
+
+                <!-- RECYCLE BIN -->
+                {% if 'recyclebin' in request.path %}
+                <a class="dropdown-item" onclick="restore('{{ folder.id }}', true)">Restore folder</a>
+                <a class="dropdown-item" onclick="perm_delete('{{ folder.id }}', true)">Permanently Remove</a>
+                {% endif %}
+            </div>
+        </div>
+    </td>
+</tr>
+{% endfor %}

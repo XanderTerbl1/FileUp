@@ -191,22 +191,42 @@ function sharePopup(id, is_folder) {
     $("#share-cur-id").val(id)
     $("#share-type").val(file_type)
 
-    getUserViewableList(function (response) {
-        var users = response.users
-        var share_users = $("#share-user-list");
-        var user;
-        for (var i = 0; i < users.length; i++) {
-            user = users[i];
-            share_users.append(`            
-                <div class="checkbox">
-                    <label><input type="checkbox" name='user_ids[]' value="` + user.id + `">` + user.first_name + ' ' + user.last_name + '  (' + user.email + `)</label>
-                </div>
-            `);
-        }
-        getGroupViewableList(function (response) {
-            console.log(response);
-            //Show the Popup after group and User items where fetched.
-            $('#shareModal').modal()
+    // Get the users/group that the file is already shared with
+    getSharedUsers(id, file_type, function (response) {
+        user_participants = response.users;
+
+        // Get all the other users as well
+        getUserViewableList(function (response) {
+            var users = response.users
+            var share_users = $("#share-user-list");
+            share_users.html("")
+            var user;
+            for (var i = 0; i < users.length; i++) {
+                user = users[i];
+
+                //Is the file already shared with the user.
+                var checked = "";
+                for (var j = 0; j < user_participants.length; j++) {
+                    if (user_participants[j].id == user.id) {
+                        checked = "checked";
+                        break;
+                    }
+                }
+
+                share_users.append(`            
+                    <div class="checkbox">
+                        <label><input ` + checked + ` type="checkbox" name='user_ids[]' value="` + user.id + `">` + user.first_name + ' ' + user.last_name + '  (' + user.email + `)</label>
+                    </div>
+                `);
+            }
+
+            //Get all the other groups 
+            getGroupViewableList(function (response) {
+                console.log(response);
+
+                //Show the populated popup after group and user items where fetched.
+                $('#shareModal').modal()
+            });
         });
     });
 }

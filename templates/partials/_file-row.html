@@ -1,0 +1,53 @@
+{% for file in files %}
+<tr id="file-{{ file.id }}-row" class="file-row">
+    <td>
+        <a href="{% url 'download' file.id %}" class="draggable" id="file-{{ file.id }}">
+            <i class="far fa-file"></i>
+            <span id="file-{{ file.id }}-name">{{ file.name }}</span></a>
+    </td>
+    <td>{{ file.file_type }}
+        {% if file.is_public %} | <i class="fas fa-globe" title="Public File"></i> {% endif %}
+        {% if file.is_shared %} | <i class="fas fa-users" title="Shared File"></i>{% endif %}
+    </td>
+    <td>{{ file.owner.first_name }}</td>
+    <td>{{ file.date_created |timesince }} ago</td>
+    <td>{{ file.file_source.size }}</td>
+    <td>
+        <div class="dropleft">
+            <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <!-- MY FILES/MAIN ACTIONS -->
+                {% if request.path == '/' or 'folders' in request.path or 'search' in request.path %}
+                <a href="{% url 'download' file.id %}" class="dropdown-item">Download File</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" onclick="renamePopup('{{ file.id }}',false)">Rename File</a>
+                <a class="dropdown-item" onclick="remove('{{ file.id }}', false)">Remove File</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" onclick="sharePopup('{{ file.id }}',false)">Share File</a>
+                <a class="dropdown-item" onclick="publish('{{ file.id }}', false)">Create Public Link</a>
+                {% endif %}
+
+                <!-- SHARED ROOT & PUBLIC FILES-->
+                {% if request.path == "/shared/"  or 'public' in request.path %}
+                <a class="dropdown-item" href="{% url 'download' file.id %}">Download File</a>
+                {% endif %}
+
+                <!-- SHARED FILES VIEW -->
+                {% if 'shared/content/view' in request.path %}
+                <a href="{% url 'download' file.id %}" class="dropdown-item">Download File</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" onclick="renamePopup('{{ file.id }}',false)">Rename File</a>
+                <a class="dropdown-item" onclick="remove('{{ file.id }}', false)">Remove File</a>
+                {% endif %}
+
+                <!-- RECYCLE BIN -->
+                {% if 'recyclebin' in request.path %}
+                <a class="dropdown-item" onclick="restore('{{ file.id }}', false)">Restore File</a>
+                <a class="dropdown-item" onclick="perm_delete('{{ file.id }}', false)">Permanently Remove</a>
+                {% endif %}
+            </div>
+        </div>
+    </td>
+</tr>
+{% endfor %}

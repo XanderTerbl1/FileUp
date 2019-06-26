@@ -13,5 +13,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 ]
 # This will allow files to be accessed if they have the url
-# we do not want that...
 # + static(settings.MEDIA_URL,  document_root=settings.MEDIA_ROOT)
