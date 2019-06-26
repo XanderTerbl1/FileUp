@@ -58,7 +58,7 @@
         <!-- <button type="button" class="btn">Download File</button> -->
         {% if current.parent_folder %}
         <a type="button" class="btn" {% if current.parent_folder.parent_folder %}
-            href="{% url 'folders' current.parent_folder.id %}" {% else %} href="{% url 'myfiles'%}" {% endif %}><i
+            href="{% url 'shared_content' current.parent_folder.id %}" {% else %} href="{% url 'shared'%}" {% endif %}><i
                 class=" fas fa-level-up-alt"></i>
         </a>
         {% endif %}

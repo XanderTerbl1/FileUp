@@ -9,9 +9,8 @@ from django.contrib import messages
 import json
 import os
 from django.http import Http404
-
 from .models import Folder, File
-from shared.models import SharedFolder
+from shared.models import SharedFolder, SharedFile
 from shared.views import confirmSharedParent
 from accounts.models import UserPreferences
 from decimal import Decimal
@@ -393,11 +392,12 @@ def share(request):
     """
     """
     if request.method == 'POST':
+        file_type = request.POST['type']
         file_id = request.POST['id']
         owner_id = request.user.id
-        if (request.POST['type'] == "folder"):
+        if (file_type == "folder"):
             request_obj = Folder.objects.get(id=file_id, owner=owner_id)
-        elif (request.POST['type'] == "file"):
+        elif (file_type == "file"):
             request_obj = File.objects.get(id=file_id, owner=owner_id)
 
         if (request_obj is not None):
@@ -405,15 +405,17 @@ def share(request):
                 request_obj.is_shared = True
             else:
                 request_obj.is_shared = False
-
-            # Sharing files works up to here.
-            # SharedFolder is only folder...
-            # Need to make SharedFile
             request_obj.save()
-            shared, created = SharedFolder.objects.get_or_create(
-                folder=request_obj
-            )
 
+            if (file_type == "folder"):
+                shared, created = SharedFolder.objects.get_or_create(
+                    folder=request_obj
+                )
+            else:
+                shared, created = SharedFile.objects.get_or_create(
+                    file=request_obj
+                )
+                
             if (not created):
                 shared.users.clear()
 
@@ -427,10 +429,7 @@ def share(request):
 
 def download(request, file_id):
     '''    
-    This was easier/faster than making protected links. This way works
-    We are just relying on the mime type to always work...
     '''
-
     file_obj = File.objects.get(id=file_id)
     if (request.user.is_authenticated):
         if (not confirmUserAccess(file_obj, request.user.id)):

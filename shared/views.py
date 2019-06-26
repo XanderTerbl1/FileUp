@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import Http404
 from django.contrib.auth.decorators import login_required
-from .models import SharedFolder
+from .models import SharedFolder, SharedFile
 from myfiles.models import Folder, File
 
 
@@ -12,11 +12,15 @@ def confirmSharedParent(requested_obj, user_id):
     This recursiveley confirms that the file/folder or one if its parent
     are shared with this user.
 
-    For the shared users, it returns the breadcrumb/trail as well
+    Attempts to return breadcrumb as well
     '''
     if (requested_obj.is_shared):
-        if (SharedFolder.objects.filter(users=user_id, folder=requested_obj)):
-            return (True, [])
+        if (isinstance(requested_obj, File)):
+            if (SharedFile.objects.filter(users=user_id, file=requested_obj)):
+                return (True, [])
+        else:
+            if (SharedFolder.objects.filter(users=user_id, folder=requested_obj)):
+                return (True, [])
 
     parent = requested_obj.parent_folder
     breadcrumb = []
@@ -44,9 +48,12 @@ def shared(request):
 
     folders = Folder.objects.filter(sharedfolder__in=SharedFolder.objects.filter(
         users=request.user.id))
+    files = File.objects.filter(sharedfile__in=SharedFile.objects.filter(
+        users=request.user.id))
 
     context = {
-        'folders': folders
+        'folders': folders,
+        'files': files
     }
 
     return render(request, 'shared/shared.html', context)
