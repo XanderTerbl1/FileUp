@@ -205,6 +205,7 @@ function sharePopup(id, is_folder) {
     // Get the users/group that the file is already shared with
     getSharedUsers(id, file_type, function (response) {
         user_participants = response.users;
+        group_participants = response.groups;
 
         // Get all the other users as well
         getUserViewableList(function (response) {
@@ -230,12 +231,39 @@ function sharePopup(id, is_folder) {
                     </div>
                 `);
             }
+            if (user.length == 0) {
+                share_users.html('<p>No users to share folder with</p>');
+            }
 
             //Get all the other groups 
             getGroupViewableList(function (response) {
-                console.log(response);
+                var groups = response.groups
+                var share_groups = $("#share-group-list");
+                share_groups.html("")
+                var group;
 
-                //Show the populated popup after group and user items where fetched.
+                for (var i = 0; i < groups.length; i++) {
+                    group = groups[i];
+
+                    //Is the file already shared with the group.
+                    var checked = "";
+                    for (var j = 0; j < group_participants.length; j++) {
+                        if (group_participants[j].name == group.name) {
+                            checked = "checked";
+                            break;
+                        }
+                    }
+
+                    share_groups.append(`            
+                    <div class="checkbox">
+                        <label><input ` + checked + ` type="checkbox" name='group_ids[]' value="` + group.name + `">` + group.name + `</label>
+                    </div>
+                    `);
+                    //Show the populated popup after group and user items where fetched.
+                }
+                if (groups.length == 0) {
+                    share_groups.html('<p>You are not part of any groups</p>');
+                }
                 $('#shareModal').modal()
             });
         });

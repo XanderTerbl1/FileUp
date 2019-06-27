@@ -2,7 +2,7 @@ from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse, Http404
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.core import serializers
 from datetime import datetime
 from django.contrib import messages
@@ -183,7 +183,7 @@ def create_folder(request):
 
         shared = True if request.POST.get('shared') else False
         print(shared)
-        
+
         # create and save the new folder
         folder = Folder(
             name=folder_name,
@@ -198,8 +198,8 @@ def create_folder(request):
         struct = json.loads(ser_folder)
 
         resp = {
-            "folder" : struct[0],
-            "shared" : shared
+            "folder": struct[0],
+            "shared": shared
         }
         return JsonResponse(resp)
 
@@ -406,7 +406,7 @@ def share(request):
             request_obj = File.objects.get(id=file_id, owner=owner_id)
 
         if (request_obj is not None):
-            if (request.POST.get("user_ids[]")):
+            if (request.POST.get("user_ids[]") or request.POST.get("group_ids[]")):
                 request_obj.is_shared = True
             else:
                 request_obj.is_shared = False
@@ -420,13 +420,17 @@ def share(request):
                 shared, created = SharedFile.objects.get_or_create(
                     file=request_obj
                 )
-                
+
             if (not created):
                 shared.users.clear()
+                shared.groups.clear()
 
             for id in request.POST.getlist("user_ids[]"):
-                print(id)
                 shared.users.add(id)
+
+            for name in request.POST.getlist("group_ids[]"):
+                group = Group.objects.get(name=name) 
+                shared.groups.add(group)
 
             shared.save()
             return JsonResponse({"id": "CREATED"})

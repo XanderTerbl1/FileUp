@@ -7,7 +7,7 @@ from .models import UserPreferences
 import json
 
 # django user model
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from myfiles.models import Folder, File
 from .models import UserPreferences
 
@@ -74,21 +74,20 @@ def users_all(request):
     """
     Returns name + surname and email of all users
     """
-    user_id = request.user.id
-    users = User.objects.exclude(id=user_id).values(
+    users = User.objects.exclude(id=request.user.id).values(
         "id", "first_name", "last_name", "email")
 
     return JsonResponse({"users": list(users)})
 
 
-# TODO Implement...
 @login_required(login_url='/accounts/login')
 def groups_all(request):
     """
-    Returns all group names and their ids
+    Returns the names of all groups that the current user belongs to
     """
-
-    return JsonResponse({"msg": "noice"})
+    user_groups = request.user.groups.all().values('name')
+    print(list(user_groups))
+    return JsonResponse({"groups": list(user_groups)})
 
 
 def register(request):

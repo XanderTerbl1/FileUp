@@ -111,16 +111,16 @@ function getGroupViewableList(callback) {
         },
         // handle a non-successful response
         error: function (xhr, errmsg, err) {
-            console.log("Get users failed...")
+            console.log("Get groups failed...")
         }
     });
 }
 
 //Gets a list of all the users that a certain file/folder
 //has been shared with
-function getSharedUsers(id, file_type, callback) {
+function getSharedUsers(file_id, file_type, callback) {
     $.ajax({
-        url: "/shared/participants/" + id,
+        url: "/shared/participants/" + file_id,
         type: "POST", // http method
         data: {
             "file_type": file_type,

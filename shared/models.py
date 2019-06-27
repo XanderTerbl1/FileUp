@@ -1,10 +1,11 @@
 from django.db import models
 from myfiles.models import Folder, File
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 
 class SharedDirectoryItem(models.Model):
     users = models.ManyToManyField(User)
+    groups = models.ManyToManyField(Group)
 
     class Meta:
         abstract = True

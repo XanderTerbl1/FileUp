@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from .models import SharedFolder, SharedFile
 from myfiles.models import Folder, File
 from django.http import JsonResponse
+from django.contrib.auth.models import User
 
 
 def confirmSharedParent(requested_obj, user_id):
@@ -15,13 +16,20 @@ def confirmSharedParent(requested_obj, user_id):
 
     Attempts to return breadcrumb as well
     '''
+    user = User.objects.get(id=user_id)
     if (requested_obj.is_shared):
         if (isinstance(requested_obj, File)):
             if (SharedFile.objects.filter(users=user_id, file=requested_obj)):
                 return (True, [])
+            else:
+                if (SharedFile.objects.filter(groups__in=user.groups.all())):
+                    return (True, [])
         else:
             if (SharedFolder.objects.filter(users=user_id, folder=requested_obj)):
                 return (True, [])
+            else:
+                if (SharedFolder.objects.filter(groups__in=user.groups.all())):
+                    return (True, [])
 
     parent = requested_obj.parent_folder
     breadcrumb = []
@@ -30,6 +38,9 @@ def confirmSharedParent(requested_obj, user_id):
         if (parent.is_shared):
             if (SharedFolder.objects.filter(users=user_id, folder=parent)):
                 return (True, breadcrumb)
+            elif (SharedFolder.objects.filter(groups__in=user.groups.all())):
+                return (True, breadcrumb)
+
         parent = parent.parent_folder
     return (False, [])
 
@@ -45,12 +56,23 @@ def shared(request):
     [X] Shared With Me Files
     [ ] Files I Shared
     [ ] Shared via group
+
+                                    exclude
+
     """
 
-    folders = Folder.objects.filter(sharedfolder__in=SharedFolder.objects.filter(
-        users=request.user.id))
-    files = File.objects.filter(sharedfile__in=SharedFile.objects.filter(
-        users=request.user.id))
+    # Get User and Group Shared folders and files
+    folders = Folder.objects.filter(
+        sharedfolder__in=SharedFolder.objects.filter(users=request.user.id) |
+        SharedFolder.objects.filter(groups__in=request.user.groups.filter())
+    )
+    folders = folders.exclude(owner=request.user.id)
+
+    files = File.objects.filter(
+        sharedfile__in=SharedFile.objects.filter(users=request.user.id) |
+        SharedFile.objects.filter(groups__in=request.user.groups.filter())
+    )
+    files = files.exclude(owner=request.user.id)
 
     context = {
         'folders': folders,
@@ -107,13 +129,20 @@ def participants(request, file_id):
                 owner_id = shared.file.owner.id
 
         except SharedFolder.DoesNotExist:
-            return JsonResponse({"users": []})
+            return JsonResponse({"users": [], "groups": []})
         except SharedFile.DoesNotExist:
-            return JsonResponse({"users": []})
+            return JsonResponse({"users": [], "groups": []})
 
         if (owner_id != request.user.id):
             if (not shared.users.all().filter(id=request.user.id)):
                 # User does not have access to this info
                 raise Http404
 
-        return JsonResponse({"users": list(shared.users.all().values("id", "first_name", "last_name", "email"))})
+        users = list(shared.users.all().values("id"))
+        groups = list(shared.groups.all().values('name'))
+        resp = {
+            'users': users,
+            'groups': groups
+        }
+
+        return JsonResponse(resp)
