@@ -15,6 +15,7 @@ from shared.views import confirmSharedParent
 from accounts.models import UserPreferences
 from decimal import Decimal
 from public.views import confirmPublicParent
+from fileup.mailer import email_groups, email_users
 
 
 def confirmUserOwnedParent(requested_obj, user_id):
@@ -53,13 +54,10 @@ def getLiableOwner(directory_item):
 def confirmUserAccess(requested_obj, user_id):
      # Is it the user's file?
     if (requested_obj.owner.id != user_id):
-        print("Failed 1")
         # Does he own the root/some parent folder?
         if (not confirmUserOwnedParent(requested_obj, user_id)):
-            print("Failed 2")
             # Is it a file that was shared with him?
             if (not confirmSharedParent(requested_obj, user_id)[0]):
-                print("Failed 3")
                 # Then he does not have access to it
                 return False
     return True
@@ -155,7 +153,6 @@ def folders(request, folder_id):
 @login_required(login_url='/accounts/login')
 def search(request):
     query = request.GET["query"]
-    print(query)
     if (query == ""):
         return redirect("myfiles")
 
@@ -182,7 +179,6 @@ def create_folder(request):
             id=request.POST['current_folder_id'])
 
         shared = True if request.POST.get('shared') else False
-        print(shared)
 
         # create and save the new folder
         folder = Folder(
@@ -421,18 +417,50 @@ def share(request):
                     file=request_obj
                 )
 
+            existing_users_dict = list(shared.users.all().values('id'))
+            existing_groups_dict = list(shared.groups.all().values('id'))
+
+            # Convert the dict[] to single value list
+            existing_users = []
+            existing_groups = []
+
+            for user_dict in existing_users_dict:
+                existing_users.append(user_dict['id'])
+
+            for group_dict in existing_groups_dict:
+                existing_groups.append(group_dict['id'])
+            # -----------------------------------------
+
+            new_users = []
+            new_groups = []
+
             if (not created):
                 shared.users.clear()
                 shared.groups.clear()
 
             for id in request.POST.getlist("user_ids[]"):
                 shared.users.add(id)
+                if (id not in existing_users):
+                    new_users.append(id)
 
             for name in request.POST.getlist("group_ids[]"):
-                group = Group.objects.get(name=name) 
+                group = Group.objects.get(name=name)
                 shared.groups.add(group)
+                if (group.id not in existing_groups):
+                    new_groups.append(group.id)
 
             shared.save()
+
+            subject = 'FileUP | ' + request.user.first_name + \
+                " shared a " + file_type + " with you"
+            body = "'" + request_obj.name + \
+                "(" + file_type + ")'   " + \
+                " has been shared with you. You can view it here: " +\
+                request.META['HTTP_HOST'] + "/shared"
+
+            email_groups(new_groups, request.user.email,  subject, body)
+            email_users(new_users, request.user.email,  subject, body)
+
             return JsonResponse({"id": "CREATED"})
 
 
@@ -448,7 +476,6 @@ def download(request, file_id):
 
     file_path = file_obj.file_source.url[1:]
     if os.path.exists(file_path):
-        print("True")
         with open(file_path, 'rb') as fh:
             response = HttpResponse(
                 fh.read(), content_type="application/force-download")

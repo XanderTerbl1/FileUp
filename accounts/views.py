@@ -86,7 +86,6 @@ def groups_all(request):
     Returns the names of all groups that the current user belongs to
     """
     user_groups = request.user.groups.all().values('name')
-    print(list(user_groups))
     return JsonResponse({"groups": list(user_groups)})
 
 
