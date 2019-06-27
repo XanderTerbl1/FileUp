@@ -10,7 +10,11 @@
         {% if file.is_shared %} | <i class="fas fa-users" title="Shared File"></i>{% endif %}
     </td>
     <td>{{ file.owner.first_name }}</td>
+    {% if 'recyclebin' in request.path %}
+    <td>{{ file.date_recycled}}</td>
+    {% else %}
     <td>{{ file.date_created |timesince }} ago</td>
+    {% endif %}
     <td>{{ file.file_source.size | filesizeformat }}</td>
     <td>
         <div class="dropleft">

@@ -1,28 +1,14 @@
 {% for folder in folders %}
 <tr id="folder-{{ folder.id }}-row" class="file-row">
     <td>
-        <a 
-        {% if 'public' in request.path %}
-        href="{% url 'public_content' folder.id %}"
-        {% endif %}
-        
-        {%  if request.path == "/shared/" %}
-        href="{% url 'shared_content' folder.id %}"
-        {% endif %}
-
-        {% if 'shared/content/view' in request.path %}
-        href="{% url 'shared_content' folder.id %}" class="droppable draggable" id="folder-{{ folder.id }}"
-        {% endif %}
-
-        {% if request.path == '/' or 'folders' in request.path or 'search' in request.path %}
-        href="{% url 'folders' folder.id %}" class="droppable draggable" id="folder-{{ folder.id }}"
-        {% endif %}
-        
-        {% if 'recyclebin' in request.path %}
-        href=""
-        {% endif %}
-        >
-             <i class="fas fa-folder"></i>
+        <a {% if 'public' in request.path %} href="{% url 'public_content' folder.id %}" {% endif %}
+            {%  if request.path == "/shared/" %} href="{% url 'shared_content' folder.id %}" {% endif %}
+            {% if 'shared/content/view' in request.path %} href="{% url 'shared_content' folder.id %}"
+            class="droppable draggable" id="folder-{{ folder.id }}" {% endif %}
+            {% if request.path == '/' or 'folders' in request.path or 'search' in request.path %}
+            href="{% url 'folders' folder.id %}" class="droppable draggable" id="folder-{{ folder.id }}" {% endif %}
+            {% if 'recyclebin' in request.path %} href="" {% endif %}>
+            <i class="fas fa-folder"></i>
             <span id="folder-{{ folder.id }}-name">{{ folder.name }}</span>
         </a>
     </td>

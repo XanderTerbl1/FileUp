@@ -5,21 +5,26 @@ from myfiles.models import File, Folder
 from myfiles.views import getLiableOwner
 from accounts.models import UserPreferences
 from decimal import Decimal
+from datetime import datetime, timedelta
 
 
 @login_required(login_url='/accounts/login')
 def recylebin(request):
     """
-    Serves current user all his recycled folders and files.
-    # Recycled folders has to be restored in order to traverse them.
-    # File Hierarchy wont be kept in recycle bin (i.e. all deleted items are same level)
+    Serves current user all his recycled folders and files\n
+    # Files in recycle bin still accounts for storage of liable user.\n
+    # Recycled folders cant be traversed.\n
+    # File Hierarchy wont be kept in recycle bin (i.e. all deleted items are same level).\n
     """
+    autoRecyle(request.user.id)
+
     cur_user_id = request.user.id
 
     folders = Folder.objects.filter(
         owner_id=cur_user_id, is_recycled=True).order_by('name')
     files = File.objects.filter(
         owner_id=cur_user_id, is_recycled=True).order_by('name')
+
     context = {
         'folders': folders,
         'files': files,
@@ -30,6 +35,10 @@ def recylebin(request):
 
 @login_required(login_url='/accounts/login')
 def restore(request, file_type):
+    """
+    Restore the file/folder to its original parent\n
+    If file_type == 'all', all files/folders will be restored.
+    """
     if request.method == 'POST':
         owner_id = request.user.id
         # Restore All Files and Folders
@@ -56,8 +65,13 @@ def restore(request, file_type):
 @login_required(login_url='/accounts/login')
 def perm_delete(request, file_type):
     """
-    Permanently deletes the file/folder (recursively).
-    All the children of said folder will also be deleted.
+    Permanently deletes the file/folder(recursively).
+
+    We do not count on CASCADE deleting - since we want
+    to determine which users needs to be 'compensated'
+    with storage with each delete (It isn't necessarily 
+    the user that makes the request: consider shared folders - 
+    the owner of the folder carries all cost )
     """
     if request.method == 'POST':
         file_id = request.POST['id']
@@ -83,9 +97,6 @@ def perm_delete(request, file_type):
 
 def delete_recursvie(folder):
     total_deleted = 0
-
-    # Note - owner id is not a filter for descendant files/folders
-    # since the owner of a shared folder is able to remove the entire folder.
     folders = Folder.objects.filter(parent_folder=folder)
 
     for f in folders:
@@ -116,3 +127,34 @@ def compensateLiableOwner(owner, sizes):
     else:
         userprefs.current_usage_mb -= total
     userprefs.save()
+
+
+def autoRecyle(user_id):
+    """
+    This function gets all the files/folders in the recycle bin (for a single user) that 
+    passed its 'expired' date (as specified by user) and deletes them 
+
+    It is most likely called when the users requests his recyclebin
+
+    Future updates will call this function for ALL users automatically (using task scheduler)
+    """
+    user_prefs = UserPreferences.objects.get(user=user_id)
+    recycle_lifetime = user_prefs.recyclebin_lifetime
+
+    time_threshold = datetime.now() - timedelta(days=recycle_lifetime)
+    folders = Folder.objects.filter(
+        owner_id=user_id, is_recycled=True, date_recycled__lt=time_threshold)
+    files = File.objects.filter(
+        owner_id=user_id, is_recycled=True, date_recycled__lt=time_threshold)
+
+    for _folder in folders:
+        delete_recursvie(_folder)
+
+    for _file in files:
+        owner = getLiableOwner(_file)
+
+        size = _file.file_source.size/1000000
+        compensateLiableOwner(owner, [size, ])
+
+        _file.file_source.delete()
+        _file.delete()
