@@ -11,7 +11,7 @@
     </td>
     <td>{{ file.owner.first_name }}</td>
     <td>{{ file.date_created |timesince }} ago</td>
-    <td>{{ file.file_source.size }}</td>
+    <td>{{ file.file_source.size | filesizeformat }}</td>
     <td>
         <div class="dropleft">
             <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown"

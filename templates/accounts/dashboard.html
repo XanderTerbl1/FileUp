@@ -6,10 +6,15 @@
 
 <!-- Header & Upload -->
 <div class="container-fluid">
-    <div class="row">
-        <h2>Dashboard</h2>
+        <div class="row">
+            <h2>Dashboard</h2>
+            {% if user.is_staff %}
+            <div class="ml-4">
+                <a class="btn btn-outline-secondary" href="{% url 'admin:index' %}">Go to Admin Area</a>
+            </div>
+            {% endif %}
+        </div>
     </div>
-</div>
 
 <div class="container-fluid mt-3">
     <div class="row">
