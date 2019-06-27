@@ -1,13 +1,11 @@
 from django.shortcuts import render, get_object_or_404
+from django.core.exceptions import PermissionDenied
 from myfiles.models import Folder, File
 
 
 def confirmPublicParent(requested_obj):
     '''
-    Basically, if a file needs to be a descendant of a public file
-    or needs to be a public file itself inorder to be displayed here.
-    This recursiveley confirms that the file/folder or one if its parent
-    are public
+    Confirms recursiveley that a file is (or is a descendant of) a PUBLIC file
     '''
     if (requested_obj.is_public):
         return True
@@ -22,13 +20,8 @@ def confirmPublicParent(requested_obj):
 
 def public(request, file_type, file_id):
     """
-    This is the root entry point
-    Since there is no publicly available root folder
-    for public files - we need a single file/folder view.
-    This servers just that
-
-    public_content would serve the content of a public folder
-    (or descendant)
+    This is the entry point for a public folder/file
+    It serves the requested public folder 
     """
     requested_obj = get_object_or_404(
         Folder if (file_type == "folder") else File,
@@ -37,6 +30,7 @@ def public(request, file_type, file_id):
     if (confirmPublicParent(requested_obj)):
         files = []
         folders = []
+
         if (file_type == "folder"):
             folders = [requested_obj, ]
         elif (file_type == "file"):
@@ -48,9 +42,14 @@ def public(request, file_type, file_id):
         }
 
         return render(request, "public/public.html", context)
+    else:
+        raise PermissionDenied
 
 
 def public_content(request, folder_id):
+    """
+    Serves the content of some PUBLIC folder        
+    """
     requested_folder = get_object_or_404(Folder, pk=folder_id)
     if (confirmPublicParent(requested_folder)):
         folders = Folder.objects.filter(
@@ -68,3 +67,5 @@ def public_content(request, folder_id):
         }
 
         return render(request, 'public/public.html', context)
+    else:
+        raise PermissionDenied

@@ -1,10 +1,8 @@
+from django.contrib.auth.admin import GroupAdmin as origGroupAdmin
+from django.contrib.auth.models import Group, User
 from django.contrib import admin
 from django import forms
 from .models import UserPreferences
-from django.contrib.auth.admin import GroupAdmin as origGroupAdmin
-from django.contrib.auth.models import Group, User
-
-admin.site.unregister(Group)
 
 
 class GroupAdminForm(forms.ModelForm):
@@ -31,7 +29,7 @@ class GroupAdminForm(forms.ModelForm):
 
 class GroupAdmin(origGroupAdmin):
     form = GroupAdminForm
-    # Excluding permission temp until we implement their usage
+    # Excluding permission until we implement their usage
     exclude = ('permissions',)
 
 
@@ -41,4 +39,6 @@ class UserPreferencesAdmin(admin.ModelAdmin):
 
 
 admin.site.register(UserPreferences, UserPreferencesAdmin)
+
+admin.site.unregister(Group)
 admin.site.register(Group, GroupAdmin)

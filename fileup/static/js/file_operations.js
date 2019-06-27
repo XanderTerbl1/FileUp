@@ -56,7 +56,8 @@ function move(from_id, to_id, is_folder) {
         },
 
         error: function (xhr, errmsg, err) {
-            displayAlert(xhr.responseJSON["msg"], "danger", 10 * 1000);
+            handleRequestError(xhr, errmsg, err);
+            //Reset the moved item's position
             $('#' + (is_folder ? 'folder' : 'file') + '-' + from_id).removeAttr("style");
         }
     });
@@ -94,9 +95,7 @@ function rename(file_type) {
             $('#renameModal').modal('hide')
         },
         // handle a non-successful response
-        error: function (xhr, errmsg, err) {
-            displayAlert(err + ": " + err, "danger", 10 * 1000)
-        }
+        error: handleRequestError
     });
 }
 
@@ -149,9 +148,7 @@ function create_folder() {
             $('#createFolderModel').modal('hide')
         },
         // handle a non-successful response
-        error: function (xhr, errmsg, err) {
-            displayAlert(err + ": " + err, "danger", 10 * 1000)
-        }
+        error: handleRequestError
     });
 };
 
@@ -170,9 +167,7 @@ function remove(id, is_folder) {
             displayAlert(msg, "success", 5 * 1000);
         },
 
-        error: function (xhr, errmsg, err) {
-            displayAlert(err + ": " + err, "danger", 10 * 1000)
-        }
+        error: handleRequestError
     });
 };
 
@@ -189,9 +184,7 @@ function publish(id, is_folder) {
             displayAlert(msg, "success", 20 * 1000);
         },
 
-        error: function (xhr, errmsg, err) {
-            displayAlert(err + ": " + err, "danger", 10 * 1000)
-        }
+        error: handleRequestError
     });
 };
 
@@ -290,8 +283,6 @@ function share() {
             $('#shareModal').modal('hide')
         },
         // handle a non-successful response
-        error: function (xhr, errmsg, err) {
-            displayAlert(err + ": " + err, "danger", 10 * 1000)
-        }
+        error: handleRequestError
     });
 }

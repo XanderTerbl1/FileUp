@@ -6,6 +6,5 @@ from . import views
 #i.e. public/content/101
 urlpatterns = [
     path('<str:file_type>/<int:file_id>', views.public, name='public'),
-    path('content/view/<int:folder_id>',
-         views.public_content, name='public_content'),
+    path('content/view/<int:folder_id>',views.public_content, name='public_content'),
 ]

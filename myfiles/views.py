@@ -5,26 +5,24 @@ from django.http import JsonResponse, HttpResponse, Http404
 from django.contrib.auth.models import User, Group
 from django.core import serializers
 from datetime import datetime
+from django.core.exceptions import PermissionDenied
 from django.contrib import messages
+from decimal import Decimal
 import json
 import os
-from django.http import Http404
+
 from .models import Folder, File
 from shared.models import SharedFolder, SharedFile
 from shared.views import confirmSharedParent
 from accounts.models import UserPreferences
-from decimal import Decimal
 from public.views import confirmPublicParent
 from fileup.mailer import email_groups, email_users
 
 
 def confirmUserOwnedParent(requested_obj, user_id):
     """
-    This function checks if the users owns any parent folders up the tree
-
-    When a file/folder is requested that is not the user's via this app
-    it could be that he owns the root folder.
-    Meaning he shared the original folder - and content was added within
+    Confirms recursiveley that a file is (or is a descendant of) a user owned folder
+    and that the user has access to it.
     """
     if (requested_obj.owner.id == user_id):
         return True
@@ -39,11 +37,11 @@ def confirmUserOwnedParent(requested_obj, user_id):
 
 def getLiableOwner(directory_item):
     """
-    Fetches the owner that ought to be charged for the file
-    just uploaded.
-    Recall - OWNERS of shared folders are charged for the entire shared folder     
+    Fetches the owner liable for the file directory_item.
+    Recall - OWNERS of shared folders are charged for the entire shared folder
+
+    People uploading to the shared folder will not be charged     
     """
-    # Check who owns the highest parent
     parent = directory_item
     while (parent.parent_folder):
         parent = parent.parent_folder
@@ -52,7 +50,13 @@ def getLiableOwner(directory_item):
 
 
 def confirmUserAccess(requested_obj, user_id):
-     # Is it the user's file?
+    """
+    Is the user allowed to access the requested file.
+
+    It could be his file or it could be that the file ('s parent) 
+    was shared with him
+    """
+    # Is it the user's file?
     if (requested_obj.owner.id != user_id):
         # Does he own the root/some parent folder?
         if (not confirmUserOwnedParent(requested_obj, user_id)):
@@ -70,11 +74,9 @@ def myfiles(request):
     root folders are defined as follow
         - folder name = username
         - owned by user id
-        - parent_folder_id = null.
-            Only root folders can have this property
+        - parent_folder_id = null.  Only root folders can have this property
     """
-    # Used to simulate slow server
-    # sleep(2.5)
+
     root_folder, created = Folder.objects.get_or_create(
         name=request.user.username,
         owner=request.user,
@@ -102,22 +104,14 @@ def myfiles(request):
 def folders(request, folder_id):
     requested_folder_id = folder_id
     cur_user_id = request.user.id
-
-    # check if the current user
-    # owns the folder you are trying to show here.
-    # if he doesn't we should throw unauthorized
-
-    # Used to simulate slow server
-    # sleep(2.5)
-
     requested_folder = Folder.objects.get(id=requested_folder_id)
+
     # Is it the users folder?
     if (requested_folder.owner.id != cur_user_id):
         # Does he own the root/some parent folder?
         if (not confirmUserOwnedParent(requested_folder, cur_user_id)):
             # Then he does not have access to it
-            print("User does not have access")
-            raise Http404
+            raise PermissionDenied
 
     # get all the children of the current_folder
     folders = Folder.objects.filter(
@@ -136,9 +130,9 @@ def folders(request, folder_id):
     root_folder = Folder.objects.get(
         name=request.user.username,
         owner=request.user,
-        parent_folder__isnull=True)
-    # The folder/files that need to be served - along with info
-    # about the current folder(in this case the root)
+        parent_folder__isnull=True
+    )
+
     context = {
         'folders': folders,
         'files': files,
@@ -152,13 +146,17 @@ def folders(request, folder_id):
 
 @login_required(login_url='/accounts/login')
 def search(request):
+    """
+    Search through the USER'S files for any 
+    file name that contains the query
+    """
     query = request.GET["query"]
     if (query == ""):
         return redirect("myfiles")
 
     cur_user_id = request.user.id
     folders = Folder.objects.filter(
-        owner=cur_user_id, is_recycled=False, name__icontains=query).order_by('name')
+        owner=cur_user_id, is_recycled=False, name__icontains=query, parent_folder__isnull=False).order_by('name')
     files = File.objects.filter(
         owner=cur_user_id, is_recycled=False, name__icontains=query).order_by('name')
 
@@ -174,37 +172,46 @@ def search(request):
 @login_required(login_url='/accounts/login')
 def create_folder(request):
     if request.method == 'POST':
-        folder_name = request.POST['folder_name']
-        parent_folder = Folder.objects.get(
-            id=request.POST['current_folder_id'])
+        try:
+            folder_name = request.POST['folder_name']
+            parent_folder = Folder.objects.get(
+                id=request.POST['current_folder_id'])
 
-        shared = True if request.POST.get('shared') else False
+            # the shared flag in this response
+            # indicates that it is created in Shard Files
+            # and should be navigated as such
+            shared = True if request.POST.get('shared') else False
 
-        # create and save the new folder
-        folder = Folder(
-            name=folder_name,
-            owner=request.user,
-            parent_folder=parent_folder
-        )
-        folder.save()
+            # create and save the new folder
+            folder = Folder(
+                name=folder_name,
+                owner=request.user,
+                parent_folder=parent_folder
+            )
+            folder.save()
 
-        # Serailize Folder
-        ser_folder = serializers.serialize('json', [folder, ])
-        # Convert to 'dictionary'
-        struct = json.loads(ser_folder)
+            # Serailize Folder & Convert to dictionary
+            ser_folder = serializers.serialize('json', [folder, ])
+            struct = json.loads(ser_folder)
 
-        resp = {
-            "folder": struct[0],
-            "shared": shared
-        }
-        return JsonResponse(resp)
+            resp = {
+                "folder": struct[0],
+                "shared": shared
+            }
+            return JsonResponse(resp)
+        except:
+            return JsonResponse({"msg": "Cannot create folder in this directory"}, status=500)
 
 
 @login_required(login_url='/accounts/login')
 def upload_file(request):
+    """
+    The only (final) entry point to upload files 
+    to the server
+    """
     if request.method == 'POST':
         if request.FILES.get("upload_file"):
-            # Save the file
+            # Get Info about the file and its parent
             parent_folder = Folder.objects.get(
                 id=request.POST['current_folder_id'])
 
@@ -212,10 +219,10 @@ def upload_file(request):
             file_type = file_name.split(".")[-1]  # (^_^)
 
             file_size = Decimal(
-                request.FILES['upload_file'].size / 1000000)  # to mb
+                request.FILES['upload_file'].size / (1024 * 1024))  # to mb
             liable_owner = getLiableOwner(parent_folder)
 
-            # Is there enough space?
+            # Does the liable owner have enough space to store this file?
             prefs = get_object_or_404(UserPreferences, user=liable_owner)
             if (prefs.max_usage_mb - prefs.current_usage_mb > file_size):
                 file = File(
@@ -231,12 +238,14 @@ def upload_file(request):
                 prefs.save()
                 messages.success(request, file.name + " uploaded successfully")
             else:
+                # Liable user does not have enough space to store the file
+                # Construct response
                 addressed = "You do " if liable_owner == request.user else 'The liable user (' + \
                     liable_owner.username + ') does'
-
                 messages.error(
                     request, addressed + ' not have enough space to store this file')
 
+            # Redirect to one of the only to places users can upload folders from
             if (request.POST.get("shared_view")):
                 return redirect('shared/content/view/' + str(parent_folder.id))
             else:
@@ -246,9 +255,7 @@ def upload_file(request):
 @login_required(login_url='/accounts/login')
 def move(request, file_type):
     '''
-    Currently - inorder to move a file/folder into a folder
-    you need to own the to and from files
-    Will be updated if needed when doing the sharing app
+    Move a file/folder to a different parent
     '''
     if request.method == 'POST':
         # File/Folder to be moved.
@@ -261,21 +268,13 @@ def move(request, file_type):
         # Does the user have access to the folder
         # he is trying to move it to?
         if (not confirmUserAccess(to_folder, current_user_id)):
-            print("User does not have access")
-            raise Http404
+            raise PermissionDenied
 
+        # Give the file/folder a new parent
         if (file_type == "folder"):
             from_obj = Folder.objects.get(id=from_id)
         elif (file_type == "file"):
             from_obj = File.objects.get(id=from_id)
-
-        # # Does the owner have access to the folder
-        # # that it is being moved to?
-        # # (Can't deny an owner access to his file)
-        # if (not confirmUserAccess(to_folder, from_obj.owner.id)):
-        #     print("")
-        #     return JsonResponse({"msg": "Can't move object out of owner's reach"}, status=406)
-        # Owner of the shared folder can do any operations with the files in the shared folder.
 
         if (from_obj is not None):
             from_obj.parent_folder = to_folder
@@ -307,25 +306,26 @@ def rename(request, file_type):
         if (request_obj is not None):
             # Does the user have access?
             if (not confirmUserAccess(request_obj, current_user_id)):
-                print("User does not have access")
-                raise Http404
+                raise PermissionDenied
 
             request_obj.name = name
             request_obj.save()
-            return JsonResponse({"id":  file_id, "name": name})
+
+            resp = {
+                "id":  file_id,
+                "file_type": file_type,
+                "name": name  # the new file name
+            }
+
+            return JsonResponse(resp)
 
 
 @login_required(login_url='/accounts/login')
 def remove(request, file_type):
     '''
     Move the file/folder to the recycle bin
-    where it will stay x ammount of time
+    where it will stay for (user defined) days 
     before being deleted
-
-    When a user deletes a file that didnt originally
-    belong to him - it will be deleted perm directly
-
-    tags: DELETE/REMOVE/MOVE TO RECYCLE BIN
     '''
     if request.method == 'POST':
         request_obj_id = request.POST['id']
@@ -338,54 +338,54 @@ def remove(request, file_type):
 
         if (request_obj is not None):
             if (not confirmUserAccess(request_obj, current_user_id)):
-                print("User does not have access")
-                raise Http404
-
-            if (request_obj.owner.id != current_user_id):
-                # deleting someone elses stuff..
-                # Decide what to do when someone - that may delete
-                # A folder that is not their's - delete it.
-                # Whos recycle bin? Or no recycle bin?
-                # I say no recycle bin
-                # TODO
-                pass
+                raise PermissionDenied
 
             request_obj.is_recycled = True
             request_obj.save()
 
-            return JsonResponse({"id": request_obj_id, 'name': request_obj.name})
+            resp = {
+                "id": request_obj_id,
+                "type": file_type,
+                "name": request_obj.name  # provided for alert purposes
+            }
+
+            return JsonResponse(resp)
 
 
 @login_required(login_url='/accounts/login')
 def publish(request, file_type):
     """
-    Makes folder/file public by setting the is_public flag
-    and return a full link to access the file
+    Makes folder/file public by setting the is_public = True
+    It returns a full link to access the file
     as part of the json response
     """
     if request.method == 'POST':
         file_id = request.POST['id']
         owner_id = request.user.id
 
-        if (file_type == "folder"):
-            request_obj = Folder.objects.get(id=file_id, owner=owner_id)
-        elif (file_type == "file"):
-            request_obj = File.objects.get(id=file_id, owner=owner_id)
+        # User must OWN a folder inorder to make it public
+        try:
+            if (file_type == "folder"):
+                request_obj = Folder.objects.get(id=file_id, owner=owner_id)
+            elif (file_type == "file"):
+                request_obj = File.objects.get(id=file_id, owner=owner_id)
+                if (request_obj is not None):
+                    # host/public/type/id
+                    rel_path = '/public/' + file_type + "/" + str(file_id)
+                    url = request.META['HTTP_HOST'] + rel_path
 
-        if (request_obj is not None):
-            # host/public/type/id
-            rel_path = '/public/' + file_type + "/" + str(file_id)
-            url = request.META['HTTP_HOST'] + rel_path
-            request_obj.is_public = True
-            request_obj.save()
+                    request_obj.is_public = True
+                    request_obj.save()
 
-            resp = {
-                "id": file_id,
-                "access_link": url,
-                "rel_path": rel_path
-            }
+                    resp = {
+                        "id": file_id,
+                        "access_link": url,
+                        "rel_path": rel_path
+                    }
 
-            return JsonResponse(resp)
+                    return JsonResponse(resp)
+        except:
+            return JsonResponse({"msg": "You need to own a folder to create a public link"}, status=406)
 
 
 @login_required(login_url='/accounts/login')
@@ -458,10 +458,18 @@ def share(request):
                 " has been shared with you. You can view it here: " +\
                 request.META['HTTP_HOST'] + "/shared"
 
+            # Send emails to all the new users/groups of the shared file
             email_groups(new_groups, request.user.email,  subject, body)
             email_users(new_users, request.user.email,  subject, body)
 
-            return JsonResponse({"id": "CREATED"})
+            resp = {
+                "id": request_obj.id,
+                "type": file_type,
+                'email_groups': new_groups,
+                'email_users': new_users
+            }
+
+            return JsonResponse(resp)
 
 
 def download(request, file_id):
@@ -480,7 +488,7 @@ def download(request, file_id):
             response = HttpResponse(
                 fh.read(), content_type="application/force-download")
             response['Content-Disposition'] = 'inline; filename=' + \
-                os.path.basename(file_path)
+                file_obj.name
             return response
 
     raise Http404

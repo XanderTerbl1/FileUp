@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from myfiles.models import File, Folder
-from myfiles.views import getLiableOwner
-from accounts.models import UserPreferences
 from decimal import Decimal
 from datetime import datetime, timedelta
 
+from myfiles.models import File, Folder
+from myfiles.views import getLiableOwner
+from accounts.models import UserPreferences
 
 @login_required(login_url='/accounts/login')
 def recylebin(request):
@@ -78,21 +78,34 @@ def perm_delete(request, file_type):
         owner_id = request.user.id
 
         if file_type == 'folder':
+            # Permanently delete this folder and all its children
             root = Folder.objects.get(id=file_id, owner=owner_id)
             total_deleted = delete_recursvie(root)
-            return JsonResponse({"id": file_id, "total_deleted": total_deleted})
+
+            resp = {
+                "id": file_id,
+                "total_deleted": total_deleted
+            }
+
+            return JsonResponse(resp)
 
         elif file_type == "file":
+            # Permanently delete this file
             f = File.objects.get(id=file_id, owner=owner_id)
             owner = getLiableOwner(f)
 
-            size = f.file_source.size/1000000
+            size = f.file_source.size / (1024 * 1024)
             compensateLiableOwner(owner, [size, ])
 
-            f.file_source.delete()
+            f.file_source.delete()  # delete from server
             f.delete()
 
-            return JsonResponse({"id": file_id, "total_deleted": 1})
+            resp = {
+                "id": file_id,
+                "total_deleted": 1
+            }
+
+            return JsonResponse(resp)
 
 
 def delete_recursvie(folder):
@@ -102,20 +115,21 @@ def delete_recursvie(folder):
     for f in folders:
         total_deleted += delete_recursvie(f)
 
-    # TODO - Delete the files from the server as well!
     files = File.objects.filter(parent_folder=folder)
+    # Calculate the storage that the liable user must be compensated with
     sizes = []
+
     for f in files:
-        sizes.append((f.file_source.size / 1000000))
-        f.file_source.delete()
+        sizes.append((f.file_source.size / 1024 * 1024))
+        f.file_source.delete()  # delete from the server
 
     owner = getLiableOwner(folder)
     compensateLiableOwner(owner, sizes)
 
-    count = files.delete()
+    count = files.delete()  # delete from DB
     total_deleted += count[0]
 
-    folder.delete()
+    folder.delete()  # delete from DB
     return (total_deleted + 1)
 
 
@@ -153,7 +167,7 @@ def autoRecyle(user_id):
     for _file in files:
         owner = getLiableOwner(_file)
 
-        size = _file.file_source.size/1000000
+        size = _file.file_source.size/(1024 * 1024)
         compensateLiableOwner(owner, [size, ])
 
         _file.file_source.delete()

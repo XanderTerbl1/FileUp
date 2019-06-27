@@ -3,6 +3,17 @@ $(document).ready(function () {
     loadQuotaInfo();
 });
 
+
+function handleRequestError(xhr, errmsg, err) {
+    var msg = ""
+    if ('msg' in xhr.responseJSON) {
+        msg = xhr.responseJSON['msg']
+    }
+    msg += "\n(" + err + " (" + errmsg + "))"
+    displayAlert(msg, "danger", 1000 * 10)
+}
+
+
 //=============== Alerts ==============================
 var cur_alert;
 function displayAlert(text, type, time = 3000) {
@@ -69,12 +80,7 @@ function loadQuotaInfo() {
             $("#quota-sidebar-info").html("Used <b>" + current_usage + "mb</b> of <b>" + max_usage + "mb</b>");
         },
         // handle a non-successful response
-        error: function (xhr, errmsg, err) {
-            // $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
-            //     " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
-            // console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
-            console.log("rename failed...")
-        }
+        error: handleRequestError
     });
 }
 
@@ -95,9 +101,7 @@ function getUserViewableList(callback) {
             callback(response);
         },
         // handle a non-successful response
-        error: function (xhr, errmsg, err) {
-            console.log("Get users failed...")
-        }
+        error: handleRequestError
     });
 }
 function getGroupViewableList(callback) {
@@ -110,9 +114,7 @@ function getGroupViewableList(callback) {
             callback(response);
         },
         // handle a non-successful response
-        error: function (xhr, errmsg, err) {
-            console.log("Get groups failed...")
-        }
+        error: handleRequestError
     });
 }
 
@@ -133,8 +135,6 @@ function getSharedUsers(file_id, file_type, callback) {
             callback(response);
         },
         // handle a non-successful response
-        error: function (xhr, errmsg, err) {
-            console.log("Get shared users failed...")
-        }
+        error: handleRequestError
     });
 }

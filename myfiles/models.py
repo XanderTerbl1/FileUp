@@ -3,24 +3,17 @@ from datetime import datetime
 from django.contrib.auth.models import User
 
 
-"""
-Bit of redundant fields between Folder & File is better
-than dealing with the problems with multi-tables or inheritance. x_X
-"""
-
-
 class DirectoryItem(models.Model):
     name = models.CharField(max_length=200)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
     # a parent folder of null/blank would indicate a root folder.
     # A users root folder is created upon registration
-
     date_created = models.DateTimeField(default=datetime.now)
     is_recycled = models.BooleanField(default=False)
 
-    # auto updates on changes. Recycled will be last change.
-    # it's a workaround - better than making custom save function
+    # auto_now: updates on changes. is_recycled will be last change
+    # (Improve - create custom save function)
     date_recycled = models.DateTimeField(auto_now=True)
 
     is_public = models.BooleanField(default=False)
