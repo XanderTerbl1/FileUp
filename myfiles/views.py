@@ -369,37 +369,77 @@ def publish(request, file_type):
                 request_obj = Folder.objects.get(id=file_id, owner=owner_id)
             elif (file_type == "file"):
                 request_obj = File.objects.get(id=file_id, owner=owner_id)
-                if (request_obj is not None):
-                    # host/public/type/id
-                    rel_path = '/public/' + file_type + "/" + str(file_id)
-                    url = request.META['HTTP_HOST'] + rel_path
 
-                    request_obj.is_public = True
-                    request_obj.save()
+            if (request_obj is not None):
+                # host/public/type/id
+                rel_path = '/public/' + file_type + "/" + str(file_id)
+                url = request.META['HTTP_HOST'] + rel_path
 
-                    resp = {
-                        "id": file_id,
-                        "access_link": url,
-                        "rel_path": rel_path
-                    }
+                request_obj.is_public = True
+                request_obj.save()
 
-                    return JsonResponse(resp)
+                resp = {
+                    "id": file_id,
+                    "file_type": file_type,
+                    "access_link": url,
+                    "rel_path": rel_path
+                }
+
+                return JsonResponse(resp)
         except:
-            return JsonResponse({"msg": "You need to own a folder to create a public link"}, status=406)
+            return JsonResponse({"msg": "You need to own a file to create a public link"}, status=406)
+
+
+@login_required(login_url='/accounts/login')
+def unpublish(request, file_type):
+    """
+    Removes the is_public field from a file
+    """
+    if request.method == 'POST':
+        file_id = request.POST['id']
+        owner_id = request.user.id
+
+        try:
+            if (file_type == "folder"):
+                request_obj = Folder.objects.get(id=file_id, owner=owner_id)
+            elif (file_type == "file"):
+                request_obj = File.objects.get(id=file_id, owner=owner_id)
+
+            if (request_obj is not None):
+
+                request_obj.is_public = False
+                request_obj.save()
+
+                resp = {
+                    "id": file_id,
+                    "file_type": file_type
+                }
+
+                return JsonResponse(resp)
+        except:
+            return JsonResponse({"msg": "You need to own a file to remove a public link"}, status=406)
 
 
 @login_required(login_url='/accounts/login')
 def share(request):
     """
+    Share a file/folder with a certain group of people
+    Only the owner of a file/folder may share it
     """
     if request.method == 'POST':
         file_type = request.POST['type']
         file_id = request.POST['id']
         owner_id = request.user.id
-        if (file_type == "folder"):
-            request_obj = Folder.objects.get(id=file_id, owner=owner_id)
-        elif (file_type == "file"):
-            request_obj = File.objects.get(id=file_id, owner=owner_id)
+
+        try:
+            if (file_type == "folder"):
+                request_obj = Folder.objects.get(id=file_id, owner=owner_id)
+            elif (file_type == "file"):
+                request_obj = File.objects.get(id=file_id, owner=owner_id)
+        except Folder.DoesNotExist:
+            return JsonResponse({"msg": "You can't share a folder you don't own"}, status=401)
+        except File.DoesNotExist:
+            return JsonResponse({"msg": "You can't share a file you don't own"}, status=401)
 
         if (request_obj is not None):
             if (request.POST.get("user_ids[]") or request.POST.get("group_ids[]")):
@@ -473,14 +513,12 @@ def share(request):
 
 
 def download(request, file_id):
-    '''    
-    '''
     file_obj = File.objects.get(id=file_id)
     if (request.user.is_authenticated):
         if (not confirmUserAccess(file_obj, request.user.id)):
-            raise Http404
-    elif (not confirmPublicParent(file_obj)):
-        raise Http404
+            raise PermissionDenied
+    elif (not confirmPublicParent(file_obj)[0]):
+        raise PermissionDenied
 
     file_path = file_obj.file_source.url[1:]
     if os.path.exists(file_path):
@@ -490,5 +528,5 @@ def download(request, file_id):
             response['Content-Disposition'] = 'inline; filename=' + \
                 file_obj.name
             return response
-
-    raise Http404
+    else:
+        raise Http404

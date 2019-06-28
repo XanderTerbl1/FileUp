@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 
 class DirectoryItem(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, default="New Folder", blank =False)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
     # a parent folder of null/blank would indicate a root folder.

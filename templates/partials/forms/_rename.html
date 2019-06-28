@@ -12,13 +12,14 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body text-center">
+            <div class="modal-body input-group">
                 <input type="hidden" name="id" id="rename-cur-id">
                 <input type="hidden" name="type" id="rename-type">
-                <input type="text" placeholder="New Name" name="name" id="rename-name">
-                <input type="submit" class="btn btn-primary" value="Rename">
+                <input class="form-control" type="text" placeholder="New Name" name="name" id="rename-name" required>
+                <div class="input-group-append">
+                    <input type="submit" class="btn btn-outline-secondary" value="Rename">
+                </div>
             </div>
         </form>
     </div>
 </div>
-

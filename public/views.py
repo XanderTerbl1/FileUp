@@ -7,15 +7,18 @@ def confirmPublicParent(requested_obj):
     '''
     Confirms recursiveley that a file is (or is a descendant of) a PUBLIC file
     '''
+    breadcrumb = []
     if (requested_obj.is_public):
-        return True
+        return (True, [])
     else:
         parent = requested_obj.parent_folder
         while (parent):
+            breadcrumb.insert(0, parent)
             if (parent.is_public):
-                return True
+                return (True, breadcrumb)
             parent = parent.parent_folder
-        return False
+
+        return (False, [])
 
 
 def public(request, file_type, file_id):
@@ -27,7 +30,7 @@ def public(request, file_type, file_id):
         Folder if (file_type == "folder") else File,
         pk=file_id,  is_recycled=False)
 
-    if (confirmPublicParent(requested_obj)):
+    if (confirmPublicParent(requested_obj)[0]):
         files = []
         folders = []
 
@@ -51,7 +54,8 @@ def public_content(request, folder_id):
     Serves the content of some PUBLIC folder        
     """
     requested_folder = get_object_or_404(Folder, pk=folder_id)
-    if (confirmPublicParent(requested_folder)):
+    confirmed, breadcrumbs = confirmPublicParent(requested_folder)
+    if (confirmed):
         folders = Folder.objects.filter(
             parent_folder=requested_folder.id, is_recycled=False).order_by('name')
 
@@ -61,8 +65,6 @@ def public_content(request, folder_id):
         context = {
             'folders': folders,
             'files': files,
-            # 'root': root_folder,
-            # 'breadcrumbs': bc_trail,
             'current': requested_folder
         }
 

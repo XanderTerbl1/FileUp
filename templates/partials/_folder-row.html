@@ -34,7 +34,12 @@
                 <a class="dropdown-item" onclick="remove('{{ folder.id }}', true)">Remove folder</a>
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item" onclick="sharePopup('{{ folder.id }}',true)">Share folder</a>
-                <a class="dropdown-item" onclick="publish('{{ folder.id }}', true)">Create Public Link</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" onclick="publish('{{ folder.id }}', true)">Create/Get Public Link</a>
+                {% if folder.is_public %}
+                <a class="dropdown-item" onclick="unpublish('{{ folder.id }}', true)">Remove Public Link</a>
+                {% endif %}
+
                 {% endif %}
 
                 <!-- SHARED ROOT & PUBLIC FILES-->

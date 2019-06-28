@@ -10,14 +10,9 @@ $("#search-submit").click(function () {
 });
 
 // =============== Draggable/Droppable Logic  ========================//
-
 $(".draggable").draggable({
     revert: 'invalid',
 });
-
-//This class will be added to the 
-//droppable class once a valid option has been added
-// hoverClass: "drop-hover",
 
 $(".droppable").droppable({
     accept: '.draggable',
@@ -40,16 +35,19 @@ $(".droppable").droppable({
 });
 
 
-
 // =============== Move Folder/File  ========================//
 function move(from_id, to_id, is_folder) {
-    console.log("move folder is called!"); // sanity check
     $.ajax({
-        url: "/move/" + (is_folder ? "folder" : "file"), // the endpoint
-        type: "POST", // http method
-        data: { "csrfmiddlewaretoken": getCookie('csrftoken'), "from_id": from_id, "to_id": to_id }, // data sent with the post request
+        url: "/move/" + (is_folder ? "folder" : "file"),
+        type: "POST",
+        data: {
+            "csrfmiddlewaretoken": getCookie('csrftoken'),
+            "from_id": from_id,
+            "to_id": to_id
+        },
 
         success: function (response) {
+            // Remove Item and Display Success message
             $('#' + (is_folder ? 'folder' : 'file') + '-' + from_id + '-row').remove();
             var msg = "Moved '" + response['from_name'] + "' to '" + response["to_name"] + "'";
             displayAlert(msg, "success");
@@ -68,9 +66,11 @@ function move(from_id, to_id, is_folder) {
 function renamePopup(id, is_folder) {
     file_type = is_folder ? "folder" : "file";
     cur_name = $("#" + file_type + "-" + id + "-name").html();
+    // Set relevant fields
     $("#rename-cur-id").val(id)
     $("#rename-name").val(cur_name)
     $("#rename-type").val(file_type)
+
     $('#renameModal').modal('show')
 }
 
@@ -81,20 +81,20 @@ $('#rename-form').on('submit', function (event) {
 });
 
 function rename(file_type) {
-    console.log("rename is working!"); // sanity check
     $.ajax({
-        url: "/rename/" + file_type, // the endpoint
-        type: "POST", // http method
-        data: $("#rename-form").serialize(), // data sent with the post request
+        url: "/rename/" + file_type,
+        type: "POST",
+        data: $("#rename-form").serialize(),
 
-        // handle a successful response
+
         success: function (file) {
-            //Check if file or folder - assuming folder now.
+            //Rename File/Folder 
             $("#" + file_type + "-" + file.id + "-name").html(file.name);
+
             $("#rename-form")[0].reset()
             $('#renameModal').modal('hide')
         },
-        // handle a non-successful response
+
         error: handleRequestError
     });
 }
@@ -102,19 +102,18 @@ function rename(file_type) {
 // =============== Folder Creation  ========================//
 $('#folder-create-form').on('submit', function (event) {
     event.preventDefault();
-    console.log("form submitted!")  // sanity check
     create_folder();
 });
 
 function create_folder() {
-    console.log("create folder is working!"); // sanity check
     $.ajax({
-        url: '/create_folder', // the endpoint
-        type: "POST", // http method
-        data: $("#folder-create-form").serialize(), // data sent with the post request
+        url: '/create_folder',
+        type: "POST",
+        data: $("#folder-create-form").serialize(),
 
-        // handle a successful response
+
         success: function (response) {
+            //Create the folder and populate html. 
             folder_href = (response.shared ? "/shared/content/view/" : "/folders/")
             $("#file-view-body").prepend(`
         <tr id="folder-` + response.folder.pk + `-row" class="file-row">
@@ -147,7 +146,7 @@ function create_folder() {
             $("#folder-create-form")[0].reset()
             $('#createFolderModel').modal('hide')
         },
-        // handle a non-successful response
+
         error: handleRequestError
     });
 };
@@ -155,14 +154,18 @@ function create_folder() {
 
 // =============== Remove Folder/File  ========================//
 function remove(id, is_folder) {
-    console.log("delete folder is called!"); // sanity check
     $.ajax({
-        url: "/remove/" + (is_folder ? "folder" : "file"), // the endpoint
-        type: "POST", // http method
-        data: { "id": id, "csrfmiddlewaretoken": getCookie('csrftoken') }, // data sent with the post request
+        url: "/remove/" + (is_folder ? "folder" : "file"),
+        type: "POST",
+        data: {
+            "id": id,
+            "csrfmiddlewaretoken": getCookie('csrftoken')
+        },
 
         success: function (file) {
+            // Remove From Html as well
             $('#' + (is_folder ? 'folder' : 'file') + '-' + file.id + '-row').remove();
+            //Display success msg
             var msg = "'" + file.name + "' moved to recycle bin";
             displayAlert(msg, "success", 5 * 1000);
         },
@@ -174,12 +177,14 @@ function remove(id, is_folder) {
 // =============== Publish Folder/File  ========================//
 function publish(id, is_folder) {
     $.ajax({
-        url: "/publish/" + (is_folder ? "folder" : "file"), // the endpoint
-        type: "POST", // http method
-        data: { "id": id, "csrfmiddlewaretoken": getCookie('csrftoken') }, // data sent with the post request
+        url: "/publish/" + (is_folder ? "folder" : "file"),
+        type: "POST",
+        data: {
+            "id": id,
+            "csrfmiddlewaretoken": getCookie('csrftoken')
+        },
 
         success: function (response) {
-            // $('#' +  + '-' + file.id + '-row').remove();            
             var msg = (is_folder ? 'Folder' : 'File') + " public view link: <a href='" + response.rel_path + "'>" + response.access_link + "</a>";
             displayAlert(msg, "success", 20 * 1000);
         },
@@ -187,6 +192,26 @@ function publish(id, is_folder) {
         error: handleRequestError
     });
 };
+
+function unpublish(id, is_folder) {
+    $.ajax({
+        url: "/unpublish/" + (is_folder ? "folder" : "file"),
+        type: "POST",
+        data: {
+            "id": id,
+            "csrfmiddlewaretoken": getCookie('csrftoken')
+        },
+
+        success: function (response) {
+            var msg = (is_folder ? 'Folder' : 'File') + " public link removed.";
+            displayAlert(msg, "success", 20 * 1000);
+        },
+
+        error: handleRequestError
+    });
+};
+
+
 
 
 // =============== Share File/Folder ========================//
@@ -218,6 +243,7 @@ function sharePopup(id, is_folder) {
                     }
                 }
 
+                //Add the user to the list 
                 share_users.append(`            
                     <div class="checkbox">
                         <label><input ` + checked + ` type="checkbox" name='user_ids[]' value="` + user.id + `">` + user.first_name + ' ' + user.last_name + '  (' + user.email + `)</label>
@@ -247,16 +273,18 @@ function sharePopup(id, is_folder) {
                         }
                     }
 
+                    //Add the group to the list 
                     share_groups.append(`            
                     <div class="checkbox">
                         <label><input ` + checked + ` type="checkbox" name='group_ids[]' value="` + group.name + `">` + group.name + `</label>
                     </div>
                     `);
-                    //Show the populated popup after group and user items where fetched.
                 }
                 if (groups.length == 0) {
                     share_groups.html('<p>You are not part of any groups</p>');
                 }
+
+                // Show populated popup
                 $('#shareModal').modal()
             });
         });
@@ -269,20 +297,20 @@ $('#share-form').on('submit', function (event) {
 });
 
 function share() {
-    console.log("share is working!"); // sanity check
+    console.log("share is working!");
     $.ajax({
-        url: "/share", // the endpoint
-        type: "POST", // http method
-        data: $("#share-form").serialize(), // data sent with the post request
+        url: "/share",
+        type: "POST",
+        data: $("#share-form").serialize(),
 
-        // handle a successful response
+
         success: function (response) {
             console.log(response)
             $("#share-user-list").html("");
             $("#share-form")[0].reset()
             $('#shareModal').modal('hide')
         },
-        // handle a non-successful response
+
         error: handleRequestError
     });
 }
