@@ -53,7 +53,6 @@
         </form>
         <button type="button" class="btn mr-2" id="search-submit">Search</button>
         <button type="button" class="btn" data-toggle="modal" data-target="#createFolderModel">+ Create Folder</button>
-        <!-- <button type="button" class="btn">Download File</button> -->
         {% if current.parent_folder %}
         <a type="button" class="btn" {% if current.parent_folder.parent_folder %}
             href="{% url 'folders' current.parent_folder.id %}" {% else %} href="{% url 'myfiles'%}" {% endif %}><i

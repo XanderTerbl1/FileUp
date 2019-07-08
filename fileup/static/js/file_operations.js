@@ -99,57 +99,57 @@ function rename(file_type) {
     });
 }
 
-// =============== Folder Creation  ========================//
-$('#folder-create-form').on('submit', function (event) {
-    event.preventDefault();
-    create_folder();
-});
+// =============== Ajax Folder Creation  ========================//
+// $('#folder-create-form').on('submit', function (event) {
+//     event.preventDefault();
+//     create_folder();
+// });
 
-function create_folder() {
-    $.ajax({
-        url: '/create_folder',
-        type: "POST",
-        data: $("#folder-create-form").serialize(),
+// function create_folder() {
+//     $.ajax({
+//         url: '/create_folder',
+//         type: "POST",
+//         data: $("#folder-create-form").serialize(),
 
 
-        success: function (response) {
-            //Create the folder and populate html. 
-            folder_href = (response.shared ? "/shared/content/view/" : "/folders/")
-            $("#file-view-body").prepend(`
-        <tr id="folder-` + response.folder.pk + `-row" class="file-row">
-            <td>
-                <a href="` + folder_href + response.folder.pk + `" class="droppable draggable ui-draggable ui-draggable-handle ui-droppable" id="folder-` + response.folder.pk + `" style="position: relative;">
-                     <i class="fas fa-folder"></i>
-                    <span id="folder-` + response.folder.pk + `-name">` + response.folder.fields.name + `</span>
-                </a>
-            </td>
-            <td>folder
-            </td>
-            <td>` + 'me' + `</td>
-            <td>just now</td>
-            <td>-</td>
-            <td>
-                <div class="dropleft">
-                    <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" onclick="renamePopup('` + response.folder.pk + `',true)">Rename folder</a>
-                        <a class="dropdown-item" onclick="remove('` + response.folder.pk + `', true)">Remove folder</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" onclick="sharePopup('` + response.folder.pk + `',true)">Share folder</a>
-                        <a class="dropdown-item" onclick="publish('` + response.folder.pk + `', true)">Create Public Link</a>
-                    </div>
-                </div>
-            </td>
-        </tr>    
-            `);
+//         success: function (response) {
+//             //Create the folder and populate html. 
+//             folder_href = (response.shared ? "/shared/content/view/" : "/folders/")
+//             $("#file-view-body").prepend(`
+//         <tr id="folder-` + response.folder.pk + `-row" class="file-row">
+//             <td>
+//                 <a href="` + folder_href + response.folder.pk + `" class="droppable draggable ui-draggable ui-draggable-handle ui-droppable" id="folder-` + response.folder.pk + `" style="position: relative;">
+//                      <i class="fas fa-folder"></i>
+//                     <span id="folder-` + response.folder.pk + `-name">` + response.folder.fields.name + `</span>
+//                 </a>
+//             </td>
+//             <td>folder
+//             </td>
+//             <td>` + 'me' + `</td>
+//             <td>just now</td>
+//             <td>-</td>
+//             <td>
+//                 <div class="dropleft">
+//                     <button type="button" class="btn float-right" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
+//                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+//                         <a class="dropdown-item" onclick="renamePopup('` + response.folder.pk + `',true)">Rename folder</a>
+//                         <a class="dropdown-item" onclick="remove('` + response.folder.pk + `', true)">Remove folder</a>
+//                         <div class="dropdown-divider"></div>
+//                         <a class="dropdown-item" onclick="sharePopup('` + response.folder.pk + `',true)">Share folder</a>
+//                         <a class="dropdown-item" onclick="publish('` + response.folder.pk + `', true)">Create Public Link</a>
+//                     </div>
+//                 </div>
+//             </td>
+//         </tr>    
+//             `);
 
-            $("#folder-create-form")[0].reset()
-            $('#createFolderModel').modal('hide')
-        },
+//             $("#folder-create-form")[0].reset()
+//             $('#createFolderModel').modal('hide')
+//         },
 
-        error: handleRequestError
-    });
-};
+//         error: handleRequestError
+//     });
+// };
 
 
 // =============== Remove Folder/File  ========================//

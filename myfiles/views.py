@@ -40,7 +40,7 @@ def getLiableOwner(directory_item):
     Fetches the owner liable for the file directory_item.
     Recall - OWNERS of shared folders are charged for the entire shared folder
 
-    People uploading to the shared folder will not be charged     
+    People uploading to the shared folder will not be charged
     """
     parent = directory_item
     while (parent.parent_folder):
@@ -53,7 +53,7 @@ def confirmUserAccess(requested_obj, user_id):
     """
     Is the user allowed to access the requested file.
 
-    It could be his file or it could be that the file ('s parent) 
+    It could be his file or it could be that the file ('s parent)
     was shared with him
     """
     # Is it the user's file?
@@ -147,7 +147,7 @@ def folders(request, folder_id):
 @login_required(login_url='/accounts/login')
 def search(request):
     """
-    Search through the USER'S files for any 
+    Search through the USER'S files for any
     file name that contains the query
     """
     query = request.GET["query"]
@@ -172,35 +172,28 @@ def search(request):
 @login_required(login_url='/accounts/login')
 def create_folder(request):
     if request.method == 'POST':
-        try:
-            folder_name = request.POST['folder_name']
-            parent_folder = Folder.objects.get(
-                id=request.POST['current_folder_id'])
+        folder_name = request.POST['folder_name']
+        parent_folder = Folder.objects.get(
+            id=request.POST['current_folder_id'])
 
-            # the shared flag in this response
-            # indicates that it is created in Shard Files
-            # and should be navigated as such
-            shared = True if request.POST.get('shared') else False
+        # the shared flag in this response
+        # indicates that it is created in Shard Files
+        # and should be navigated as such
+        shared = True if request.POST.get('shared') else False
 
-            # create and save the new folder
-            folder = Folder(
-                name=folder_name,
-                owner=request.user,
-                parent_folder=parent_folder
-            )
-            folder.save()
+        # create and save the new folder
+        folder = Folder(
+            name=folder_name,
+            owner=request.user,
+            parent_folder=parent_folder
+        )
+        folder.save()
 
-            # Serailize Folder & Convert to dictionary
-            ser_folder = serializers.serialize('json', [folder, ])
-            struct = json.loads(ser_folder)
-
-            resp = {
-                "folder": struct[0],
-                "shared": shared
-            }
-            return JsonResponse(resp)
-        except:
-            return JsonResponse({"msg": "Cannot create folder in this directory"}, status=500)
+        # Redirect to one of the only two places users can create folders
+        if (shared):
+            return redirect('shared/content/view/' + str(parent_folder.id))
+        else:
+            return redirect('folders/' + str(parent_folder.id))
 
 
 @login_required(login_url='/accounts/login')
@@ -245,7 +238,7 @@ def upload_file(request):
                 messages.error(
                     request, addressed + ' not have enough space to store this file')
 
-            # Redirect to one of the only to places users can upload folders from
+            # Redirect to one of the only two places users can upload folders from
             if (request.POST.get("shared_view")):
                 return redirect('shared/content/view/' + str(parent_folder.id))
             else:
