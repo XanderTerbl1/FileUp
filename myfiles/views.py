@@ -203,40 +203,42 @@ def upload_file(request):
     to the server
     """
     if request.method == 'POST':
-        if request.FILES.get("upload_file"):
+        if request.FILES.get("upload_file[]"):
             # Get Info about the file and its parent
             parent_folder = Folder.objects.get(
                 id=request.POST['current_folder_id'])
 
-            file_name = request.FILES.get("upload_file").name
-            file_type = file_name.split(".")[-1]  # (^_^)
+            # Upload all files
+            for _file in request.FILES.getlist("upload_file[]"):
+                file_name = _file.name
+                file_type = file_name.split(".")[-1]  # (^_^)
 
-            file_size = Decimal(
-                request.FILES['upload_file'].size / (1024 * 1024))  # to mb
-            liable_owner = getLiableOwner(parent_folder)
+                file_size = Decimal(
+                    _file.size / (1024 * 1024))  # to mb
+                liable_owner = getLiableOwner(parent_folder)
 
-            # Does the liable owner have enough space to store this file?
-            prefs = get_object_or_404(UserPreferences, user=liable_owner)
-            if (prefs.max_usage_mb - prefs.current_usage_mb > file_size):
-                file = File(
-                    name=file_name,
-                    owner=request.user,
-                    parent_folder=parent_folder,
-                    file_type=file_type,
-                    file_source=request.FILES['upload_file']
-                )
-                file.save()
+                # Does the liable owner have enough space to store this file?
+                prefs = get_object_or_404(UserPreferences, user=liable_owner)
+                if (prefs.max_usage_mb - prefs.current_usage_mb > file_size):
+                    file = File(
+                        name=file_name,
+                        owner=request.user,
+                        parent_folder=parent_folder,
+                        file_type=file_type,
+                        file_source=_file
+                    )
+                    file.save()
 
-                prefs.current_usage_mb += file_size
-                prefs.save()
-                messages.success(request, file.name + " uploaded successfully")
-            else:
-                # Liable user does not have enough space to store the file
-                # Construct response
-                addressed = "You do " if liable_owner == request.user else 'The liable user (' + \
-                    liable_owner.username + ') does'
-                messages.error(
-                    request, addressed + ' not have enough space to store this file')
+                    prefs.current_usage_mb += file_size
+                    prefs.save()
+                    messages.success(request, file.name + " uploaded successfully")
+                else:
+                    # Liable user does not have enough space to store the file
+                    # Construct response
+                    addressed = "You do " if liable_owner == request.user else 'The liable user (' + \
+                        liable_owner.username + ') does'
+                    messages.error(
+                        request, addressed + ' not have enough space to store this file')
 
             # Redirect to one of the only two places users can upload folders from
             if (request.POST.get("shared_view")):
