@@ -4,6 +4,15 @@ if (document.getElementById("file-upload"))
         document.getElementById("upload-form").submit();
     };
 
+//Drag to upload 
+function drag_drop(event) {
+    event.preventDefault();
+    document.querySelector('#file-upload').files = event.dataTransfer.files;
+    document.getElementById("upload-form").submit();
+}
+
+
+//================== Search Submit =================================/
 
 $("#search-submit").click(function () {
     $("#search-form").submit();
