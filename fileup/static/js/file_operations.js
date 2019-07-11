@@ -6,9 +6,12 @@ if (document.getElementById("file-upload"))
 
 //Drag to upload 
 function drag_drop(event) {
-    event.preventDefault();
-    document.querySelector('#file-upload').files = event.dataTransfer.files;
-    document.getElementById("upload-form").submit();
+    //conditional solves ambiguity between move and upload drops 
+    if ('dataTransfer' in event) {
+        event.preventDefault();
+        document.querySelector('#file-upload').files = event.dataTransfer.files;
+        document.getElementById("upload-form").submit();
+    }
 }
 
 
