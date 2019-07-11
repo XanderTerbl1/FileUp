@@ -525,3 +525,6 @@ def download(request, file_id):
             return response
     else:
         raise Http404
+
+def download_folder():
+    pass
