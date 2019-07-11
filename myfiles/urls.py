@@ -14,5 +14,6 @@ urlpatterns = [
     path('publish/<str:file_type>', views.publish, name="publish"),
     path('unpublish/<str:file_type>', views.unpublish, name="unpublish"),
     path('download/<int:file_id>', views.download, name="download"),
+    path('download_folder/<int:folder_id>', views.download_folder, name="download_folder"),
     path('share', views.share, name="share")
 ]
