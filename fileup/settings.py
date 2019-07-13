@@ -131,3 +131,6 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'fileup25@gmail.com'
 EMAIL_HOST_PASSWORD = 'Testing123!'
 EMAIL_USE_TLS = True
+
+# Encryption
+ENCRYPT_KEY = b'7QxT9FtdaPn5ohhyOOgYghhIhnfXFQV5PgWC0ejU6zI='

@@ -17,6 +17,7 @@ from shared.views import confirmSharedParent
 from accounts.models import UserPreferences
 from public.views import confirmPublicParent
 from fileup.mailer import email_groups, email_users
+from fileup.file_encrypt import encryptFile, decryptFile
 
 
 def confirmUserOwnedParent(requested_obj, user_id):
@@ -199,7 +200,7 @@ def create_folder(request):
 @login_required(login_url='/accounts/login')
 def upload_file(request):
     """
-    The only (final) entry point to upload files 
+    The only entry point to upload files 
     to the server
     """
     if request.method == 'POST':
@@ -216,7 +217,7 @@ def upload_file(request):
                 file_size = Decimal(
                     _file.size / (1024 * 1024))  # to mb
                 liable_owner = getLiableOwner(parent_folder)
-
+                
                 # Does the liable owner have enough space to store this file?
                 prefs = get_object_or_404(UserPreferences, user=liable_owner)
                 if (prefs.max_usage_mb - prefs.current_usage_mb > file_size):
@@ -227,7 +228,10 @@ def upload_file(request):
                         file_type=file_type,
                         file_source=_file
                     )
-                    file.save()
+                    file.save()                    
+
+                    # Encrypt the file
+                    print(encryptFile(file.file_source.url[1:]))
 
                     prefs.current_usage_mb += file_size
                     prefs.save()
@@ -516,6 +520,8 @@ def download(request, file_id):
         raise PermissionDenied
 
     file_path = file_obj.file_source.url[1:]
+    decryptFile(file_path)
+    
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:
             response = HttpResponse(
