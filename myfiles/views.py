@@ -18,6 +18,7 @@ from accounts.models import UserPreferences
 from public.views import confirmPublicParent
 from fileup.mailer import email_groups, email_users
 from fileup.file_encrypt import encryptFile, decryptFile
+import shutil
 
 
 def confirmUserOwnedParent(requested_obj, user_id):
@@ -230,12 +231,10 @@ def upload_file(request):
                     )
                     file.save()                    
 
-                    # Encrypt the file
-                    print(encryptFile(file.file_source.url[1:]))
-
                     prefs.current_usage_mb += file_size
                     prefs.save()
-                    messages.success(request, file.name + " uploaded successfully")
+                    messages.success(request, file.name +
+                                     " uploaded successfully")
                 else:
                     # Liable user does not have enough space to store the file
                     # Construct response
@@ -515,13 +514,13 @@ def download(request, file_id):
     file_obj = File.objects.get(id=file_id)
     if (request.user.is_authenticated):
         if (not confirmUserAccess(file_obj, request.user.id)):
-            raise PermissionDenied
+            if (not confirmPublicParent(file_obj)[0]):
+                raise PermissionDenied
     elif (not confirmPublicParent(file_obj)[0]):
         raise PermissionDenied
 
-    file_path = file_obj.file_source.url[1:]
-    decryptFile(file_path)
-    
+    file_path = file_obj.file_source.url[1:] 
+
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:
             response = HttpResponse(
@@ -531,3 +530,60 @@ def download(request, file_id):
             return response
     else:
         raise Http404
+
+
+def download_folder(request, folder_id):
+    root_folder = Folder.objects.get(id=folder_id)
+    # Does he have access to the folder
+    if (request.user.is_authenticated):
+        if (not confirmUserAccess(root_folder, request.user.id)):
+            if (not confirmPublicParent(root_folder)[0]):
+                raise PermissionDenied
+    elif (not confirmPublicParent(root_folder)[0]):
+        raise PermissionDenied
+
+    # Create a temp folder with the loggend in users id
+    temp_path = 'media/tmp/' + str(request.user.id)
+    if (os.path.exists(temp_path)):
+        shutil.rmtree(temp_path)
+
+    # Get the folder he requested
+    root_path = temp_path + "/" + root_folder.name
+    os.makedirs(root_path)
+    addFolderContent(root_folder, root_path)
+
+    # Zip with root folder
+    zip_path = temp_path + "/" + root_folder.name
+    shutil.make_archive(zip_path, 'zip', root_path)
+
+    # Download the zip
+    if os.path.exists(zip_path + ".zip"):
+        with open(zip_path + ".zip", 'rb') as fh:
+            response = HttpResponse(
+                fh.read(), content_type="application/force-download")
+            response['Content-Disposition'] = 'inline; filename=' + \
+                root_folder.name + ".zip"
+
+        # Delete the temp path
+        shutil.rmtree(temp_path)
+
+        return response
+    else:
+        raise Http404
+
+
+# Recursively add folder content
+def addFolderContent(folder, path):
+    folders = Folder.objects.filter(
+        parent_folder=folder.id, is_recycled=False).order_by('name')
+    files = File.objects.filter(
+        parent_folder=folder.id, is_recycled=False).order_by('name')
+
+    for _f in folders:
+        new_path = path + "/" + _f.name
+        os.makedirs(new_path)
+        addFolderContent(_f, new_path)
+
+    for _f in files:
+        file_path = _f.file_source.url[1:]
+        shutil.copy2(file_path, path) 

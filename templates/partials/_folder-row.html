@@ -33,6 +33,8 @@
                 <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}',true)">Rename folder</a>
                 <a class="dropdown-item" onclick="remove('{{ folder.id }}', true)">Remove folder</a>
                 <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="{% url 'download_folder' folder.id %}">Download Folder</a>
+                <div class="dropdown-divider"></div>
                 <a class="dropdown-item" onclick="sharePopup('{{ folder.id }}',true)">Share folder</a>
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item" onclick="publish('{{ folder.id }}', true)">Create/Get Public Link</a>
@@ -42,15 +44,17 @@
 
                 {% endif %}
 
+
                 <!-- SHARED ROOT & PUBLIC FILES-->
                 {% if request.path == "/shared/"  or 'public' in request.path %}
-                <a class="dropdown-item">No Actions Available</a>
+                <a class="dropdown-item" href="{% url 'download_folder' folder.id %}">Download Folder</a>
                 {% endif %}
 
                 <!-- SHARED FILES VIEW -->
                 {% if 'shared/content/view' in request.path %}
                 <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}',true)">Rename folder</a>
                 <a class="dropdown-item" onclick="remove('{{ folder.id }}', true)">Remove folder</a>
+                <a class="dropdown-item" href="{% url 'download_folder' folder.id %}">Download Folder</a>
                 {% endif %}
 
                 <!-- RECYCLE BIN -->
