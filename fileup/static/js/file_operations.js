@@ -1,4 +1,5 @@
-// =============== Auto Submit On Uploaded ========================//
+// =============== Upload Files ========================//
+//Auto Submit on upload
 if (document.getElementById("file-upload"))
     document.getElementById("file-upload").onchange = function () {
         document.getElementById("upload-form").submit();

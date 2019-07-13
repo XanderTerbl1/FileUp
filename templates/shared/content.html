@@ -17,7 +17,7 @@
                 <label for="file-upload" class="btn" id="upload-btn">
                     <i class="fas fa-upload"></i> Upload File
                 </label>
-                <input id="file-upload" type="file" name="upload_file" />
+                <input id="file-upload" type="file" name="upload_file[]" />
             </form>
         </div>
     </div>
@@ -64,27 +64,32 @@
 {% include 'partials/forms/_create.html' %}
 {% include 'partials/forms/_rename.html' %}
 
-<table class="table table-hover file-view">
-    <thead>
-        <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Type</th>
-            <th scope="col">Owner</th>
-            <th scope="col">Created</th>
-            <th scope="col">Size</th>
-            <th scope="col"></th>
-        </tr>
-    </thead>
-    <tbody id="file-view-body">
+<div style="min-height: 80%" id="drop_zone" ondrop="drag_drop(event)" ondragover="return false">
+    {% if files or folders %}
+    <table class="table table-hover file-view">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Type</th>
+                <th scope="col">Owner</th>
+                <th scope="col">Created</th>
+                <th scope="col">Size</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
 
-        <!-- Folders -->
-        {% include 'partials/_folder-row.html' %}
-        <!-- Files -->
-        {% include 'partials/_file-row.html' %}
+        <tbody id="file-view-body">
+            <!-- Folders -->
+            {% include 'partials/_folder-row.html' %}
+            <!-- Files -->
+            {% include 'partials/_file-row.html' %}
+        </tbody>
+    </table>
+    {% else %}
+    {% include 'partials/_empty-state.html' %}
+    {% endif %}
+</div>
 
-
-    </tbody>
-</table>
 
 {% endblock %}
 
