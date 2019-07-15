@@ -201,7 +201,7 @@ def create_folder(request):
 @login_required(login_url='/accounts/login')
 def upload_file(request):
     """
-    The only entry point to upload files 
+    The only entry point to upload files
     to the server
     """
     if request.method == 'POST':
@@ -218,7 +218,7 @@ def upload_file(request):
                 file_size = Decimal(
                     _file.size / (1024 * 1024))  # to mb
                 liable_owner = getLiableOwner(parent_folder)
-                
+
                 # Does the liable owner have enough space to store this file?
                 prefs = get_object_or_404(UserPreferences, user=liable_owner)
                 if (prefs.max_usage_mb - prefs.current_usage_mb > file_size):
@@ -229,7 +229,7 @@ def upload_file(request):
                         file_type=file_type,
                         file_source=_file
                     )
-                    file.save()                    
+                    file.save()
 
                     prefs.current_usage_mb += file_size
                     prefs.save()
@@ -322,7 +322,7 @@ def rename(request, file_type):
 def remove(request, file_type):
     '''
     Move the file/folder to the recycle bin
-    where it will stay for (user defined) days 
+    where it will stay for (user defined) days
     before being deleted
     '''
     if request.method == 'POST':
@@ -519,14 +519,15 @@ def download(request, file_id):
     elif (not confirmPublicParent(file_obj)[0]):
         raise PermissionDenied
 
-    file_path = file_obj.file_source.url[1:] 
+    file_path = file_obj.file_source.url[1:]
+    file_name = file_obj.name if (
+        "." + file_obj.file_type in file_obj.name) else file_obj.name + "." + file_obj.file_type
 
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:
             response = HttpResponse(
                 fh.read(), content_type="application/force-download")
-            response['Content-Disposition'] = 'inline; filename=' + \
-                file_obj.name
+            response['Content-Disposition'] = 'inline; filename=' + file_name
             return response
     else:
         raise Http404
@@ -586,4 +587,4 @@ def addFolderContent(folder, path):
 
     for _f in files:
         file_path = _f.file_source.url[1:]
-        shutil.copy2(file_path, path) 
+        shutil.copy2(file_path, path)
