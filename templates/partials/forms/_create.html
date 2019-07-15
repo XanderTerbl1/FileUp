@@ -13,6 +13,9 @@
                 </button>
             </div>
             <div class="modal-body text-center input-group">
+                {% if 'shared/content/view' in request.path %}
+                <input type="hidden" name="shared" value="True">
+                {% endif %}
                 <input type="hidden" name="current_folder_id" value="{{ current.id }}">
                 <input class="form-control" type="text" placeholder="Folder Name" name="folder_name" required>
                 <div class="input-group-append">

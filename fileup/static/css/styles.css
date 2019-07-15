@@ -7,6 +7,22 @@ Color Scheme
 - #63ace5
 */
 
+.empty-state{
+    border: dashed grey 2px; 
+    border-radius: 10px; 
+    height: 65vh; 
+    width: 100%; 
+    cursor: pointer;
+}
+
+.empty-state i{
+    background-color: #4b86b4; 
+    padding: 50px; 
+    color: white; 
+    font-size: 60px; 
+    border-radius: 50%; 
+    margin-bottom: 10px;
+}
 
 
 .file-controls button:hover {
