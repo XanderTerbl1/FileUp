@@ -30,16 +30,16 @@
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                 <!-- MY FILE/MAIN ACTIONS -->
                 {% if request.path == '/' or 'folders' in request.path or 'search' in request.path %}
-                <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}',true)">Rename folder</a>
-                <a class="dropdown-item" onclick="remove('{{ folder.id }}', true)">Remove folder</a>
+                <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}',true)"><i class="fas fa-edit"></i>Rename Folder</a>
+                <a class="dropdown-item" onclick="remove('{{ folder.id }}', true)"><i class="far fa-trash-alt"></i>Remove Folder</a>
                 <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="{% url 'download_folder' folder.id %}">Download Folder</a>
+                <a class="dropdown-item" href="{% url 'download_folder' folder.id %}"><i class="fas fa-file-download"></i>Download Folder</a>
                 <div class="dropdown-divider"></div>
-                <a class="dropdown-item" onclick="sharePopup('{{ folder.id }}',true)">Share folder</a>
+                <a class="dropdown-item" onclick="sharePopup('{{ folder.id }}',true)"><i class="fas fa-share-alt"></i>Share Folder</a>
                 <div class="dropdown-divider"></div>
-                <a class="dropdown-item" onclick="publish('{{ folder.id }}', true)">Create/Get Public Link</a>
+                <a class="dropdown-item" onclick="publish('{{ folder.id }}', true)"><i class="fas fa-link"></i>Create/Get Public Link</a>
                 {% if folder.is_public %}
-                <a class="dropdown-item" onclick="unpublish('{{ folder.id }}', true)">Remove Public Link</a>
+                <a class="dropdown-item" onclick="unpublish('{{ folder.id }}', true)"><i class="fas fa-unlink"></i>Remove Public Link</a>
                 {% endif %}
 
                 {% endif %}
@@ -47,20 +47,22 @@
 
                 <!-- SHARED ROOT & PUBLIC FILES-->
                 {% if request.path == "/shared/"  or 'public' in request.path %}
-                <a class="dropdown-item" href="{% url 'download_folder' folder.id %}">Download Folder</a>
+                <a class="dropdown-item" href="{% url 'download_folder' folder.id %}"><i class="fas fa-file-download"></i>Download Folder</a>
                 {% endif %}
 
                 <!-- SHARED FILES VIEW -->
                 {% if 'shared/content/view' in request.path %}
-                <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}',true)">Rename folder</a>
-                <a class="dropdown-item" onclick="remove('{{ folder.id }}', true)">Remove folder</a>
-                <a class="dropdown-item" href="{% url 'download_folder' folder.id %}">Download Folder</a>
+                <a class="dropdown-item" onclick="renamePopup('{{ folder.id }}',true)"><i class="fas fa-edit"></i>Rename Folder</a>
+                <a class="dropdown-item" onclick="remove('{{ folder.id }}', true)"><i class="far fa-trash-alt"></i>Remove Folder</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="{% url 'download_folder' folder.id %}"><i class="fas fa-file-download"></i>Download Folder</a>
                 {% endif %}
 
                 <!-- RECYCLE BIN -->
                 {% if 'recyclebin' in request.path %}
-                <a class="dropdown-item" onclick="restore('{{ folder.id }}', true)">Restore folder</a>
-                <a class="dropdown-item" onclick="perm_delete('{{ folder.id }}', true)">Permanently Remove</a>
+                <a class="dropdown-item" onclick="restore('{{ folder.id }}', true)"><i class="fas fa-trash-restore"></i>Restore folder</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" onclick="perm_delete('{{ folder.id }}', true)"><i class="far fa-trash-alt"></i>Permanently Remove</a>
                 {% endif %}
             </div>
         </div>

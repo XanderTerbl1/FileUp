@@ -12,7 +12,10 @@ Color Scheme
     border-radius: 10px; 
     height: 65vh; 
     width: 100%; 
-    cursor: pointer;
+}
+
+.dropdown-menu i{
+    padding-right: 10px;
 }
 
 .empty-state i{
