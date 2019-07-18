@@ -1,5 +1,10 @@
 # FileUp (TechTeam Assignment)
-## Installing 
+## Requirements
+* python 3.4+ installed 
+
+## Installing to Localhost
+(Please note, this installation is tailored for Windows machines (ps).  Linux/Mac commands might differ, but the process stays the same)
+
 1. Download the zip
 2. Create and launch a new virtual environment: 
 ```
