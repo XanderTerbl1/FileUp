@@ -49,6 +49,10 @@ python manage.py runserver
 * Auto emails on certain events (Sharing file with a user/group)
 * Many more...
 
+## Notes
+The email account used in the app was created for testing purposes. The username and password is currently hardcoded - at the deployment stage, it can easily be secured. 
+(The same counts for the ENCRYPT_KEY and SECRET_KEY
+
 
 ## Screenshots
 ![My Files](Screenshots/1.PNG?raw=true "1")
