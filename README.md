@@ -1,6 +1,6 @@
 # FileUp (TechTeam Assignment)
 ## Requirements
-* python 3.4+ installed (Lower versions can be used - but the installation commands may differ)
+* python 3.6+ installed (Lower versions can be used - but the installation commands may differ)
 
 ## Deploying/Installing to Localhost
 (Please note, this installation is tailored for Windows machines (ps).  Linux/Mac commands might differ, but the process stays the same)
