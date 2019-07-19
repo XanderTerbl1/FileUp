@@ -1,9 +1,11 @@
 # FileUp (TechTeam Assignment)
 ## Requirements
-* python 3.4+ installed 
+* python 3.4+ installed (Lower versions can be used - but the installation commands may differ)
 
-## Installing to Localhost
+## Deploying/Installing to Localhost
 (Please note, this installation is tailored for Windows machines (ps).  Linux/Mac commands might differ, but the process stays the same)
+
+( python => python3 || py3)
 
 1. Download the zip
 2. Create and launch a new virtual environment: 
@@ -38,9 +40,21 @@ python manage.py runserver
 * Upload Files (Drag&Drop/Browse).
 * Create Folders
 * Move, rename, delete, share or publish files/folders
+* Download Folders (as ZIP)
+* Download Files
 * Share folders/files with groups or individuals
 * Register users and manage user groups (admin side)
 * Manage user preferences
 * Recycle Bin lifetime
 * Auto emails on certain events (Sharing file with a user/group)
 * Many more...
+
+
+## Screenshots
+![My Files](Screenshots/1.PNG?raw=true "1")
+![My Files](Screenshots/2.PNG?raw=true "1")
+![Share](Screenshots/3.PNG?raw=true "1")
+![Shared Files](Screenshots/4.PNG?raw=true "1")
+![Recycle Bin](Screenshots/5.PNG?raw=true "1")
+![Dashboard](Screenshots/6.PNG?raw=true "1")
+![Admin](Screenshots/7.PNG?raw=true "1")

@@ -2,9 +2,11 @@ from django.db import models
 from datetime import datetime
 from django.contrib.auth.models import User
 
+def user_directory_path(instance, filename):
+    return 'user_{0}/{1}'.format(instance.owner.id, instance.name)
 
 class DirectoryItem(models.Model):
-    name = models.CharField(max_length=200, default="New Folder", blank =False)
+    name = models.CharField(max_length=200, default="New Folder", blank=False)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
     # a parent folder of null/blank would indicate a root folder.
@@ -12,7 +14,7 @@ class DirectoryItem(models.Model):
     date_created = models.DateTimeField(default=datetime.now)
     is_recycled = models.BooleanField(default=False)
 
-    # auto_now: updates on changes. is_recycled will be last change
+    # auto_now: updates on changes. date_recycled will be last change
     # (Improve - create custom save function)
     date_recycled = models.DateTimeField(auto_now=True)
 
@@ -34,7 +36,7 @@ class Folder(DirectoryItem):
 class File(DirectoryItem):
     parent_folder = models.ForeignKey(Folder, on_delete=models.CASCADE)
 
-    file_source = models.FileField(upload_to='uploads/%Y/%m/%d/')
+    file_source = models.FileField(upload_to=user_directory_path)
     file_type = models.CharField(max_length=20)
 
     def __str__(self):

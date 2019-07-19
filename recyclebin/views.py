@@ -8,6 +8,7 @@ from myfiles.models import File, Folder
 from myfiles.views import getLiableOwner
 from accounts.models import UserPreferences
 
+
 @login_required(login_url='/accounts/login')
 def recylebin(request):
     """
@@ -167,7 +168,7 @@ def autoRecyle(user_id):
     for _file in files:
         owner = getLiableOwner(_file)
 
-        size = _file.file_source.size/(1024 * 1024)
+        size = _file.file_source.size / (1024 * 1024)
         compensateLiableOwner(owner, [size, ])
 
         _file.file_source.delete()

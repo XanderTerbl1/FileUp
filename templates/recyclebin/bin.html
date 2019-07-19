@@ -18,11 +18,11 @@
 
 <!-- File/Folder Controls-Buttonbar -->
 <div class="file-controls mb-3">
-    <div class="btn-group" role="group" aria-label="Basic example">
+    <div class="btn-group" role="group">
         <form action="{% url 'restore' 'all' %}" method="POST">
             {% csrf_token %}
             <input type="submit" name="restore_all" class="btn" value="Restore All">
-        </form>
+        </form> 
     </div>
 </div>
 
